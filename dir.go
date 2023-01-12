@@ -30,14 +30,13 @@
 // Package dirs provides various utility functions in dealing with directories
 // such as a list of all the files with a given (set of) extensions and
 // finding paths within the Go source directory (GOPATH, etc)
-package main
+package dirfile
 
 import (
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
-	"time"
 )
 
 // ExtFiles returns all the DirEntry's for files with given extension(s) in directory
@@ -124,23 +123,6 @@ func Dirs(path string) []string {
 		}
 	}
 	return fnms
-}
-
-// LatestMod returns the latest (most recent) modification time for any of the
-// files in the directory (optionally filtered by extension(s) if exts != nil)
-// if no files or error, returns zero time value
-func LatestMod(path string, exts []string) time.Time {
-	tm := time.Time{}
-	files := ExtFiles(path, exts)
-	if len(files) == 0 {
-		return tm
-	}
-	for _, fi := range files {
-		if fi.ModTime().After(tm) {
-			tm = fi.ModTime()
-		}
-	}
-	return tm
 }
 
 // AllFiles returns a slice of all the files, recursively, within a given directory
