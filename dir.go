@@ -42,7 +42,7 @@ import (
 // ExtFiles returns all the DirEntry's for files with given extension(s) in directory
 // in sorted order (if exts is empty then all files are returned).
 // In case of error, returns nil.
-func ExtFiles(path string, exts []string) []os.DirEntry {
+func ExtFiles(path string, exts ...string) []os.DirEntry {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil
@@ -73,7 +73,7 @@ func ExtFiles(path string, exts []string) []os.DirEntry {
 
 // ExtFileNames returns all the file names with given extension(s) in directory
 // in sorted order (if exts is empty then all files are returned)
-func ExtFileNames(path string, exts []string) []string {
+func ExtFileNames(path string, exts ...string) []string {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil

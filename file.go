@@ -12,19 +12,19 @@ import (
 )
 
 type File struct {
-	*Name
-	Abs  string
+	*Filename
 	Base string
 	Mime string
 	Stat os.FileInfo
+	abs  string
 	data []byte
 	file *os.File
 }
 
-type Name struct {
+type Filename struct {
 	Dir       string
 	Extension string
-	Root      string
+	Name      string
 	padding   string
 	pad       bool
 	prefix    string
@@ -34,7 +34,7 @@ type Name struct {
 	max       int
 }
 
-func New(n string) File {
+func NewFile(n string) File {
 	abs, err := filepath.Abs(n)
 	if err != nil {
 		log.Fatal(err)
@@ -46,19 +46,19 @@ func New(n string) File {
 	}
 
 	file := File{
-		Stat: stat,
-		Abs:  abs,
-		Base: filepath.Base(abs),
-		Name: &Name{},
+		Stat:     stat,
+		abs:      abs,
+		Base:     filepath.Base(abs),
+		Filename: &Filename{},
 	}
 
 	if !file.Stat.IsDir() {
 		file.Extension = filepath.Ext(abs)
-		file.Root = strings.TrimSuffix(file.Base, file.Extension)
+		file.Name = strings.TrimSuffix(file.Base, file.Extension)
 		file.Mime = mime.TypeByExtension(file.Extension)
 		file.Dir = filepath.Dir(abs)
 	} else {
-		file.Root = file.Base
+		file.Name = file.Base
 		file.pad = true
 		file.Dir = abs
 	}
@@ -66,35 +66,33 @@ func New(n string) File {
 	return file
 }
 
-func NewName(n string) *Name {
-	name := &Name{
+func NewFilename(n string) *Filename {
+	name := &Filename{
 		padding: "%03d",
-		Root:    n,
+		Name:    n,
 		num:     1,
 	}
 	return name
 }
 
-func (n Name) Copy(names ...string) *Name {
-	name := &Name{
-		Root:    n.Root,
-		Dir:     n.Dir,
-		padding: n.padding,
-		pad:     n.pad,
-	}
-	if len(names) > 0 {
-		name.Root = names[0]
+func (n Filename) Copy() *Filename {
+	name := &Filename{
+		Name:      n.Name,
+		Dir:       n.Dir,
+		Extension: n.Extension,
+		padding:   n.padding,
+		pad:       n.pad,
 	}
 	return name
 }
 
-func (n Name) Rename(root string) *Name {
-	name := n.Copy(root)
-	name.Extension = n.Extension
+func (n Filename) Rename(root string) *Filename {
+	name := n.Copy()
+	name.Name = root
 	return name
 }
 
-func (n Name) Generate(bounds ...int) []*Name {
+func (n Filename) Generate(bounds ...int) []*Filename {
 	var min, max int
 	switch len(bounds) {
 	case 2:
@@ -107,7 +105,7 @@ func (n Name) Generate(bounds ...int) []*Name {
 		max = 100
 	}
 
-	var names []*Name
+	var names []*Filename
 	for i := min; i <= max; i++ {
 		n := n.Copy().Num(i).Ext(n.Extension)
 		names = append(names, n)
@@ -116,35 +114,35 @@ func (n Name) Generate(bounds ...int) []*Name {
 	return names
 }
 
-func (n *Name) Ext(e string) *Name {
+func (n *Filename) Ext(e string) *Filename {
 	n.Extension = e
 	return n
 }
 
-func (n *Name) Suffix(suf string) *Name {
+func (n *Filename) Suffix(suf string) *Filename {
 	n.suffix = suf
 	return n
 }
 
-func (n *Name) Prefix(pre string) *Name {
+func (n *Filename) Prefix(pre string) *Filename {
 	n.prefix = pre
 	return n
 }
 
-func (n *Name) Pad(p string) *Name {
+func (n *Filename) Pad(p string) *Filename {
 	n.padding = p
 	n.pad = true
 	return n
 }
 
-func (n *Name) Num(i int) *Name {
+func (n *Filename) Num(i int) *Filename {
 	n.pad = true
 	n.num = i
 	return n
 }
 
-func (n Name) Path() string {
-	name := fmt.Sprintf("%s%s%s", n.prefix, n.Root, n.suffix)
+func (n Filename) Path() string {
+	name := fmt.Sprintf("%s%s%s", n.prefix, n.Name, n.suffix)
 
 	var padding string
 	if n.pad {
@@ -158,7 +156,7 @@ func (n Name) Path() string {
 	return name
 }
 
-func (n Name) String() string {
+func (n Filename) String() string {
 	return n.Path()
 }
 
@@ -184,7 +182,7 @@ func (i File) Run() error {
 }
 
 func (i *File) Tmp(data []byte) {
-	file, err := os.CreateTemp("", i.Root)
+	file, err := os.CreateTemp("", i.Name)
 	if err != nil {
 		log.Fatal(err)
 	}
