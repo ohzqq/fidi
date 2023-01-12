@@ -13,18 +13,22 @@ import (
 
 type File struct {
 	*Filename
-	Base string
+	fsEntry
 	Mime string
-	Stat os.FileInfo
-	abs  string
 	data []byte
 	file *os.File
 }
 
 type Dir struct {
 	*Filename
+	fsEntry
+	Files []File
+}
+
+type fsEntry struct {
+	Abs  string
+	Base string
 	Stat os.FileInfo
-	abs  string
 }
 
 type Filename struct {
@@ -54,10 +58,14 @@ func NewFile(n string) File {
 	}
 
 	file := File{
-		Stat:     stat,
-		abs:      abs,
-		Base:     filepath.Base(abs),
-		Filename: &Filename{},
+		fsEntry: fsEntry{
+			Stat: stat,
+			Abs:  abs,
+			Base: filepath.Base(abs),
+		},
+		Filename: &Filename{
+			Root: filepath.Dir(n),
+		},
 	}
 
 	if !file.Stat.IsDir() {
@@ -170,7 +178,7 @@ func (n Filename) String() string {
 
 func (f File) Path() string {
 	if f.Stat.IsDir() {
-		return f.abs
+		return f.Abs
 	}
 	return f.String()
 }

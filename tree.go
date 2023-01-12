@@ -12,7 +12,6 @@ package dirfile
 
 import (
 	"fmt"
-	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -28,14 +27,10 @@ type Tree struct {
 
 type TreeNode struct {
 	File
-	//Rel          string
-	//Name         string
 	Depth        int
-	Files        []os.FileInfo
-	Filez        []File
-	dirs         []File
+	Files        []File
+	SubDirs      []File
 	FilesCount   int
-	SubDirs      []os.FileInfo
 	SubDirsCount int
 }
 
@@ -51,7 +46,7 @@ func NewTree(path string) Tree {
 
 	for _, node := range tree.List {
 		node.Root = path
-		for _, file := range node.Filez {
+		for _, file := range node.Files {
 			file.Root = path
 		}
 	}
@@ -84,7 +79,7 @@ func (list *Tree) Scan(path string, depth int, ignoreErr bool) error {
 	depth++
 
 	for _, f := range node.SubDirs {
-		scanErr := list.Scan(path+f.Name(), depth, ignoreErr)
+		scanErr := list.Scan(path+f.Name, depth, ignoreErr)
 		if scanErr != nil && !ignoreErr {
 			return scanErr
 		}
@@ -103,46 +98,26 @@ func (list *Tree) GetNode(index int) (*TreeNode, error) {
 
 func (node *TreeNode) Fill(path string, depth int) error {
 	node.File = NewFile(path)
-	DirInfo, DirInfoErr := os.Lstat(path)
-	if DirInfoErr != nil {
-		return DirInfoErr
-	}
 
 	entries, err := os.ReadDir(node.Path())
 	if err != nil {
 		return err
 	}
 
-	files := make([]fs.FileInfo, 0, len(entries))
-	f := make([]File, 0, len(entries))
+	files := make([]File, 0, len(entries))
 
 	for _, entry := range entries {
-		info, err := entry.Info()
-		if err != nil {
-			return err
-		}
 		e := filepath.Join(path, entry.Name())
 		n := NewFile(e)
 		n.rel = e
-		f = append(f, n)
-
-		files = append(files, info)
+		files = append(files, n)
 	}
 
-	node.Filez = f
 	node.rel = path
 	node.Depth = depth
 
-	//for _, f := range f {
-	//  if f.Stat.IsDir() {
-	//    fmt.Printf("dir %s\n", f.Path())
-	//  } else {
-	//    fmt.Printf("file %s\n", f.Path())
-	//  }
-	//}
-
 	for _, f := range files {
-		if f.IsDir() {
+		if f.Stat.IsDir() {
 			node.SubDirs = append(node.SubDirs, f)
 		} else {
 			node.Files = append(node.Files, f)
