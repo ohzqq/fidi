@@ -21,10 +21,18 @@ type File struct {
 	file *os.File
 }
 
+type Dir struct {
+	*Filename
+	Stat os.FileInfo
+	abs  string
+}
+
 type Filename struct {
 	Dir       string
 	Extension string
 	Name      string
+	rel       string
+	Root      string
 	padding   string
 	pad       bool
 	prefix    string
@@ -92,6 +100,10 @@ func (n Filename) Rename(root string) *Filename {
 	return name
 }
 
+func (n Filename) Rel() string {
+	return strings.ReplaceAll(n.rel, n.Root, ".")
+}
+
 func (n Filename) Generate(bounds ...int) []*Filename {
 	var min, max int
 	switch len(bounds) {
@@ -141,7 +153,7 @@ func (n *Filename) Num(i int) *Filename {
 	return n
 }
 
-func (n Filename) Path() string {
+func (n Filename) String() string {
 	name := fmt.Sprintf("%s%s%s", n.prefix, n.Name, n.suffix)
 
 	var padding string
@@ -156,8 +168,11 @@ func (n Filename) Path() string {
 	return name
 }
 
-func (n Filename) String() string {
-	return n.Path()
+func (f File) Path() string {
+	if f.Stat.IsDir() {
+		return f.abs
+	}
+	return f.String()
 }
 
 func (i File) Write(wr io.Writer) error {
