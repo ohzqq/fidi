@@ -83,6 +83,10 @@ func ExtFileNames(path string, exts ...string) []string {
 	if err != nil {
 		return nil
 	}
+	return FilterFileNamesByExt(files, exts...)
+}
+
+func FilterFileNamesByExt(files []string, exts ...string) []string {
 	if len(exts) == 0 {
 		sort.StringSlice(files).Sort()
 		return files

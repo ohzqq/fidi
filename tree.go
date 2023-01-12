@@ -23,23 +23,26 @@ type Tree struct {
 	File
 	List    []TreeNode
 	Reverse map[string]int
+	exts    []string
 }
 
 type TreeNode struct {
 	File
 	Depth        int
+	exts         []string
 	Files        []File
 	SubDirs      []File
 	FilesCount   int
 	SubDirsCount int
 }
 
-func NewTree(path string) Tree {
+func NewTree(path string, exts ...string) Tree {
 	tree := Tree{
 		File: NewFile(path),
+		exts: exts,
 	}
 
-	err := tree.Scan(path, StartDepth, false)
+	err := tree.Scan(path, StartDepth, true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -67,7 +70,9 @@ func (list *Tree) Add(node TreeNode) {
 func (list *Tree) Scan(path string, depth int, ignoreErr bool) error {
 	path += string(os.PathSeparator)
 
-	node := TreeNode{}
+	node := TreeNode{
+		exts: list.exts,
+	}
 
 	fillErr := node.Fill(path, depth)
 	if fillErr != nil && !ignoreErr {
@@ -99,10 +104,24 @@ func (list *Tree) GetNode(index int) (*TreeNode, error) {
 func (node *TreeNode) Fill(path string, depth int) error {
 	node.File = NewFile(path)
 
-	entries, err := os.ReadDir(node.Path())
+	f, err := os.Open(path)
 	if err != nil {
 		return err
 	}
+	entries, err := f.ReadDir(-1)
+	if err != nil {
+		println("entry error")
+		return err
+	}
+	fmt.Printf("entries %+V\n", entries)
+	filez, _ := f.Readdirnames(-1)
+	fmt.Printf("filex %+V\n", filez)
+	//if err != nil {
+	//  println("file error")
+	//  return err
+	//}
+
+	f.Close()
 
 	files := make([]File, 0, len(entries))
 
