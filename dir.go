@@ -30,7 +30,7 @@
 // Package dirs provides various utility functions in dealing with directories
 // such as a list of all the files with a given (set of) extensions and
 // finding paths within the Go source directory (GOPATH, etc)
-package dir
+package main
 
 import (
 	"os"
