@@ -13,19 +13,27 @@
 package tree
 
 import (
+	"log"
 	"os"
 )
 
 const StartDepth = 1
 
-// Список Узлов Дерева
-type TreeNodeListStruct struct {
-	List    []TreeNodeStruct
+type Tree struct {
+	List    []TreeNode
 	Reverse map[string]int
 }
 
-// Добавляем Узел
-func (list *TreeNodeListStruct) Add(node TreeNodeStruct) {
+func NewTree(path string) Tree {
+	tree := Tree{}
+	err := tree.Scan(path, 1, false)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return tree
+}
+
+func (list *Tree) Add(node TreeNode) {
 	list.List = append(list.List, node)
 
 	if list.Reverse == nil {
@@ -35,11 +43,10 @@ func (list *TreeNodeListStruct) Add(node TreeNodeStruct) {
 	list.Reverse[node.Path] = len(list.List) - 1
 }
 
-// Сканируем Дерево Каталогов
-func (list *TreeNodeListStruct) Scan(path string, depth int, ignoreErr bool) error {
+func (list *Tree) Scan(path string, depth int, ignoreErr bool) error {
 	path += string(os.PathSeparator)
 
-	node := TreeNodeStruct{}
+	node := TreeNode{}
 
 	fillErr := node.Fill(path, depth)
 	if fillErr != nil && !ignoreErr {
@@ -60,8 +67,7 @@ func (list *TreeNodeListStruct) Scan(path string, depth int, ignoreErr bool) err
 	return nil
 }
 
-// Получить ноду по индексу
-func (list *TreeNodeListStruct) GetNode(index int) (*TreeNodeStruct, error) {
+func (list *Tree) GetNode(index int) (*TreeNode, error) {
 	if len(list.List) < index+1 {
 		return nil, &NodeIndexDontExistsError{Index: index}
 	}

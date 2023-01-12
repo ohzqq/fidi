@@ -15,8 +15,7 @@ import (
 	"os"
 )
 
-// Один Узел Дерева
-type TreeNodeStruct struct {
+type TreeNode struct {
 	Path         string
 	Name         string
 	Depth        int
@@ -26,8 +25,7 @@ type TreeNodeStruct struct {
 	SubDirsCount int
 }
 
-// Заполняем структуру при сканировании дерева
-func (node *TreeNodeStruct) Fill(path string, depth int) error {
+func (node *TreeNode) Fill(path string, depth int) error {
 	DirInfo, DirInfoErr := os.Lstat(path)
 	if DirInfoErr != nil {
 		return DirInfoErr
