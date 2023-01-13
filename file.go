@@ -15,20 +15,11 @@ type File struct {
 	*Filename
 	fsEntry
 	Mime string
-	data []byte
-	file *os.File
-}
-
-//type Dir struct {
-//  *Filename
-//  fsEntry
-//  Files []File
-//}
-
-type fsEntry struct {
 	Abs  string
 	Base string
 	Stat os.FileInfo
+	data []byte
+	file *os.File
 }
 
 type Filename struct {

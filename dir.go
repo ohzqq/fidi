@@ -8,6 +8,15 @@ import (
 
 type Filter func(File) bool
 
+type Dir struct {
+	File
+	Depth        int
+	Files        []File
+	SubDirs      []File
+	FilesCount   int
+	SubDirsCount int
+}
+
 func NewDir(path string) (Dir, error) {
 	dir := Dir{
 		File: NewFile(path),

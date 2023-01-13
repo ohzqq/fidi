@@ -24,15 +24,6 @@ type Tree struct {
 	Reverse map[string]int
 }
 
-type Dir struct {
-	File
-	Depth        int
-	Files        []File
-	SubDirs      []File
-	FilesCount   int
-	SubDirsCount int
-}
-
 func NewTree(path string) Tree {
 	tree := Tree{
 		File: NewFile(path),
