@@ -183,43 +183,64 @@ func (f File) Path() string {
 	return f.String()
 }
 
-func (i File) Write(wr io.Writer) error {
+func (i *File) Write(data []byte) *File {
+	i.data = data
+	return i
+}
+
+func (i File) write(wr io.Writer) error {
+	if len(i.data) == 0 {
+		return fmt.Errorf("no data to write")
+	}
+
 	_, err := wr.Write(i.data)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (i File) Run() error {
-	if i.file != nil {
-		defer i.file.Close()
+func (i File) Read() ([]byte, error) {
+	return os.ReadFile(i.Path())
+}
+
+func (i *File) Print() {
+	i.write(os.Stdout)
+}
+
+func (i *File) Tmp() (*os.File, error) {
+	file, err := os.CreateTemp("", i.Name)
+	if err != nil {
+		return nil, err
 	}
 
-	err := i.Write(i.file)
+	err = i.write(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
+}
+
+func (i *File) Save(n ...string) error {
+	name := i.Path()
+	if len(n) > 0 {
+		name = n[0]
+	}
+
+	file, err := os.Create(name)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	err = i.write(file)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func (i *File) Tmp(data []byte) {
-	file, err := os.CreateTemp("", i.Name)
-	if err != nil {
-		log.Fatal(err)
-	}
-	i.file = file
-	i.data = data
-}
-
-func (i *File) Save(data []byte) {
-	file, err := os.Create(i.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	i.file = file
-	i.data = data
 }
 
 func Exist(path string) bool {
@@ -227,4 +248,10 @@ func Exist(path string) bool {
 		return false
 	}
 	return true
+}
+
+func init() {
+	mime.AddExtensionType(".ini", "text/plain")
+	mime.AddExtensionType(".cue", "text/plain")
+	mime.AddExtensionType(".m4b", "audio/mp4")
 }
