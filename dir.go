@@ -11,6 +11,7 @@ type Filter func(File) bool
 type Dir struct {
 	File
 	Depth        int
+	All          []File
 	Files        []File
 	SubDirs      []File
 	FilesCount   int
@@ -34,16 +35,16 @@ func (node *Dir) sort() error {
 		return err
 	}
 
-	allFiles := make([]File, 0, len(entries))
+	node.All = make([]File, 0, len(entries))
 
 	for _, entry := range entries {
 		e := filepath.Join(node.rel, entry.Name())
 		n := NewFile(e)
 		n.rel = e
-		allFiles = append(allFiles, n)
+		node.All = append(node.All, n)
 	}
 
-	for _, f := range allFiles {
+	for _, f := range node.All {
 		if f.Stat.IsDir() {
 			node.SubDirs = append(node.SubDirs, f)
 		} else {

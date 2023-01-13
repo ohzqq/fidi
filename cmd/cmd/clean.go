@@ -1,12 +1,12 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strings"
 
+	"github.com/ohzqq/fidi"
 	"github.com/spf13/cobra"
 )
 
@@ -14,14 +14,24 @@ import (
 var cleanCmd = &cobra.Command{
 	Use:   "clean",
 	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("clean called")
+		cwd, err := os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		dir, err := fidi.NewDir(cwd)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("cwd %s\n", dir.Path())
+
+		for _, file := range dir.All {
+			if !strings.HasPrefix(file.Base, ".") {
+				n := fidi.SanitizeFilename(file.Base)
+				fmt.Printf("old: %s, new: %s\n", file.Base, n)
+			}
+		}
 	},
 }
 
