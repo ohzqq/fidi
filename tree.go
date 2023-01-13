@@ -21,25 +21,22 @@ const StartDepth = 1
 
 type Tree struct {
 	File
-	List    []TreeNode
+	Nodes   []TreeNode
 	Reverse map[string]int
-	exts    []string
 }
 
 type TreeNode struct {
 	File
 	Depth        int
-	exts         []string
 	Files        []File
 	SubDirs      []File
 	FilesCount   int
 	SubDirsCount int
 }
 
-func NewTree(path string, exts ...string) Tree {
+func NewTree(path string) Tree {
 	tree := Tree{
 		File: NewFile(path),
-		exts: exts,
 	}
 
 	err := tree.Scan(path, StartDepth, false)
@@ -47,7 +44,7 @@ func NewTree(path string, exts ...string) Tree {
 		log.Fatal(err)
 	}
 
-	for _, node := range tree.List {
+	for _, node := range tree.Nodes {
 		node.Root = path
 		for _, file := range node.Files {
 			file.Root = path
@@ -58,21 +55,19 @@ func NewTree(path string, exts ...string) Tree {
 }
 
 func (list *Tree) Add(node TreeNode) {
-	list.List = append(list.List, node)
+	list.Nodes = append(list.Nodes, node)
 
 	if list.Reverse == nil {
 		list.Reverse = make(map[string]int)
 	}
 
-	list.Reverse[node.rel] = len(list.List) - 1
+	list.Reverse[node.rel] = len(list.Nodes) - 1
 }
 
 func (list *Tree) Scan(path string, depth int, ignoreErr bool) error {
 	path += string(os.PathSeparator)
 
-	node := TreeNode{
-		exts: list.exts,
-	}
+	node := TreeNode{}
 
 	fillErr := node.Fill(path, depth)
 	if fillErr != nil && !ignoreErr {
@@ -94,11 +89,11 @@ func (list *Tree) Scan(path string, depth int, ignoreErr bool) error {
 }
 
 func (list *Tree) GetNode(index int) (*TreeNode, error) {
-	if len(list.List) < index+1 {
+	if len(list.Nodes) < index+1 {
 		return nil, &NodeIndexDontExistsError{Index: index}
 	}
 
-	return &list.List[index], nil
+	return &list.Nodes[index], nil
 }
 
 func (node *TreeNode) Fill(path string, depth int) error {
