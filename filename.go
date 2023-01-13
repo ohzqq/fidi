@@ -3,7 +3,6 @@ package fidi
 import (
 	"fmt"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -114,26 +113,4 @@ func (n Filename) String() string {
 	name = filepath.Join(n.Dir, name)
 
 	return name
-}
-
-var (
-	separators  = regexp.MustCompile(`[ &_=+:]`)
-	illegalName = regexp.MustCompile(`[^[:alnum:]-.]`)
-	dashes      = regexp.MustCompile(`[\-]+`)
-)
-
-func SanitizeFilename(n string) string {
-	// Remove any trailing space to avoid ending on -
-	s = strings.Trim(s, " ")
-
-	// Replace certain joining characters with a dash
-	s = separators.ReplaceAllString(s, "-")
-
-	// Remove all other unrecognised characters - NB we do allow any printable characters
-	s = r.ReplaceAllString(s, "")
-
-	// Remove any multiple dashes caused by replacements above
-	s = dashes.ReplaceAllString(s, "-")
-
-	return s
 }
