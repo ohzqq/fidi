@@ -21,11 +21,11 @@ const StartDepth = 1
 
 type Tree struct {
 	File
-	Nodes   []TreeNode
+	Nodes   []Dir
 	Reverse map[string]int
 }
 
-type TreeNode struct {
+type Dir struct {
 	File
 	Depth        int
 	Files        []File
@@ -54,7 +54,18 @@ func NewTree(path string) Tree {
 	return tree
 }
 
-func (list *Tree) Add(node TreeNode) {
+func NewDir(path string) (Dir, error) {
+	dir := Dir{
+		File: NewFile(path),
+	}
+	dir.rel = path
+
+	err := dir.sort()
+
+	return dir, err
+}
+
+func (list *Tree) Add(node Dir) {
 	list.Nodes = append(list.Nodes, node)
 
 	if list.Reverse == nil {
@@ -67,12 +78,11 @@ func (list *Tree) Add(node TreeNode) {
 func (list *Tree) Scan(path string, depth int, ignoreErr bool) error {
 	path += string(os.PathSeparator)
 
-	node := TreeNode{}
-
-	fillErr := node.Fill(path, depth)
+	node, fillErr := NewDir(path)
 	if fillErr != nil && !ignoreErr {
 		return fillErr
 	}
+	node.Depth = depth
 
 	list.Add(node)
 
@@ -88,7 +98,7 @@ func (list *Tree) Scan(path string, depth int, ignoreErr bool) error {
 	return nil
 }
 
-func (list *Tree) GetNode(index int) (*TreeNode, error) {
+func (list *Tree) GetNode(index int) (*Dir, error) {
 	if len(list.Nodes) < index+1 {
 		return nil, &NodeIndexDontExistsError{Index: index}
 	}
@@ -96,27 +106,22 @@ func (list *Tree) GetNode(index int) (*TreeNode, error) {
 	return &list.Nodes[index], nil
 }
 
-func (node *TreeNode) Fill(path string, depth int) error {
-	node.File = NewFile(path)
-
+func (node *Dir) sort() error {
 	entries, err := os.ReadDir(node.Path())
 	if err != nil {
 		return err
 	}
 
-	files := make([]File, 0, len(entries))
+	allFiles := make([]File, 0, len(entries))
 
 	for _, entry := range entries {
-		e := filepath.Join(path, entry.Name())
+		e := filepath.Join(node.rel, entry.Name())
 		n := NewFile(e)
 		n.rel = e
-		files = append(files, n)
+		allFiles = append(allFiles, n)
 	}
 
-	node.rel = path
-	node.Depth = depth
-
-	for _, f := range files {
+	for _, f := range allFiles {
 		if f.Stat.IsDir() {
 			node.SubDirs = append(node.SubDirs, f)
 		} else {
@@ -130,7 +135,7 @@ func (node *TreeNode) Fill(path string, depth int) error {
 	return nil
 }
 
-func (node TreeNode) FilterFiles(filter Filter) []File {
+func (node Dir) Filter(filter Filter) []File {
 	return FilterFiles(node.Files, filter)
 }
 

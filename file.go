@@ -19,11 +19,11 @@ type File struct {
 	file *os.File
 }
 
-type Dir struct {
-	*Filename
-	fsEntry
-	Files []File
-}
+//type Dir struct {
+//  *Filename
+//  fsEntry
+//  Files []File
+//}
 
 type fsEntry struct {
 	Abs  string
