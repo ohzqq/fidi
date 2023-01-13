@@ -1,4 +1,4 @@
-package dirfile
+package fidi
 
 import (
 	"os"
