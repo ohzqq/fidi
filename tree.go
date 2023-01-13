@@ -42,7 +42,7 @@ func NewTree(path string, exts ...string) Tree {
 		exts: exts,
 	}
 
-	err := tree.Scan(path, StartDepth, true)
+	err := tree.Scan(path, StartDepth, false)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -104,24 +104,10 @@ func (list *Tree) GetNode(index int) (*TreeNode, error) {
 func (node *TreeNode) Fill(path string, depth int) error {
 	node.File = NewFile(path)
 
-	f, err := os.Open(path)
+	entries, err := os.ReadDir(node.Path())
 	if err != nil {
 		return err
 	}
-	entries, err := f.ReadDir(-1)
-	if err != nil {
-		println("entry error")
-		return err
-	}
-	fmt.Printf("entries %+V\n", entries)
-	filez, _ := f.Readdirnames(-1)
-	fmt.Printf("filex %+V\n", filez)
-	//if err != nil {
-	//  println("file error")
-	//  return err
-	//}
-
-	f.Close()
 
 	files := make([]File, 0, len(entries))
 
@@ -147,6 +133,10 @@ func (node *TreeNode) Fill(path string, depth int) error {
 	node.SubDirsCount = len(node.SubDirs)
 
 	return nil
+}
+
+func (node TreeNode) FilterFiles(filter Filter) []File {
+	return FilterFiles(node.Files, filter)
 }
 
 type NodeIndexDontExistsError struct {

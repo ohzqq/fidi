@@ -39,6 +39,8 @@ import (
 	"strings"
 )
 
+type Filter func(File) bool
+
 // ExtFiles returns all the DirEntry's for files with given extension(s) in directory
 // in sorted order (if exts is empty then all files are returned).
 // In case of error, returns nil.
@@ -47,6 +49,10 @@ func ExtFiles(path string, exts ...string) []os.DirEntry {
 	if err != nil {
 		return nil
 	}
+	return FilterDirEntriesByExt(files, exts...)
+}
+
+func FilterDirEntriesByExt(files []os.DirEntry, exts ...string) []os.DirEntry {
 	if len(exts) == 0 {
 		return files
 	}
@@ -60,6 +66,30 @@ func ExtFiles(path string, exts ...string) []os.DirEntry {
 		keep := false
 		for _, ex := range exts {
 			if strings.EqualFold(ext, ex) {
+				keep = true
+				break
+			}
+		}
+		if !keep {
+			files = append(files[:i], files[i+1:]...)
+		}
+	}
+	return files
+}
+
+func FilterFilesByExt(files []File, exts ...string) []File {
+	if len(exts) == 0 {
+		return files
+	}
+	sz := len(files)
+	if sz == 0 {
+		return nil
+	}
+	for i := sz - 1; i >= 0; i-- {
+		fn := files[i]
+		keep := false
+		for _, ex := range exts {
+			if strings.EqualFold(fn.Extension, ex) {
 				keep = true
 				break
 			}
@@ -166,4 +196,38 @@ func SplitExt(fname string) (fbase, ext string) {
 	ext = filepath.Ext(fname)
 	fbase = strings.TrimSuffix(fname, ext)
 	return
+}
+
+func FilterFiles(files []File, filter Filter) []File {
+	var keep []File
+	for _, fn := range files {
+		if filter(fn) {
+			keep = append(keep, fn)
+		}
+	}
+	return keep
+}
+
+func ExtFilter(exts ...string) Filter {
+	filter := func(file File) bool {
+		for _, ex := range exts {
+			if strings.EqualFold(file.Extension, ex) {
+				return true
+			}
+		}
+		return false
+	}
+	return filter
+}
+
+func MimeFilter(mimes ...string) Filter {
+	filter := func(file File) bool {
+		for _, mt := range mimes {
+			if strings.Contains(file.Mime, mt) {
+				return true
+			}
+		}
+		return false
+	}
+	return filter
 }
