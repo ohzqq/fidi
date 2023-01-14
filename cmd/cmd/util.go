@@ -61,6 +61,27 @@ func NewName(cmd *cobra.Command, name *fidi.Filename) *fidi.Filename {
 	return name
 }
 
+func GetDirs(cmd *cobra.Command, path ...string) []fidi.Dir {
+
+	var dir fidi.Dir
+	if len(path) > 0 {
+		var err error
+		dir, err = fidi.NewDir(path[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		dir = CWD()
+	}
+
+	if cmd.Flags().Changed("recurse") {
+		tree := fidi.NewTree(dir.Path())
+		return tree.Nodes
+	}
+
+	return []fidi.Dir{dir}
+}
+
 func CWD() fidi.Dir {
 	cwd, err := os.Getwd()
 	if err != nil {
