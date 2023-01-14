@@ -97,7 +97,7 @@ func (tree Tree) GetNodesAtDepth(d int) []Dir {
 
 func (tree Tree) GetChildrenByDepth(d int) Tree {
 	if d == 0 {
-		return tree.Nodes
+		return tree
 	}
 
 	cur, err := tree.GetNode(d - 1)
@@ -107,7 +107,7 @@ func (tree Tree) GetChildrenByDepth(d int) Tree {
 
 	var nodes []Dir
 	for i := d + 1; i < len(tree.Nodes); i++ {
-		n := GetNodesAtDepth(tree, i)
+		n := tree.GetNodesAtDepth(i)
 		nodes = append(nodes, n...)
 	}
 
