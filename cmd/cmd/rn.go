@@ -40,13 +40,13 @@ var rnCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(rnCmd)
 
-	rnCmd.Flags().StringVarP(&namePrefix, "prefix", "p", "", "prefix for new name")
-	rnCmd.Flags().StringVarP(&nameSuffix, "suffix", "s", "", "suffix for new name")
-	rnCmd.Flags().StringVarP(&nameExt, "ext", "e", "", "ext for new name")
-	rnCmd.Flags().IntSliceVarP(&minMax, "range", "r", []int{}, "range of nums")
-	rnCmd.Flags().IntVarP(&nameDig, "num-digits", "N", 0, "number of digits for padding new name")
-	rnCmd.Flags().IntVarP(&nameNum, "num", "n", 0, "number for new name")
+	rnCmd.PersistentFlags().StringVarP(&namePrefix, "prefix", "p", "", "prefix for new name")
+	rnCmd.PersistentFlags().StringVarP(&nameSuffix, "suffix", "s", "", "suffix for new name")
+	rnCmd.PersistentFlags().StringVarP(&nameExt, "ext", "e", "", "ext for new name")
+	rnCmd.PersistentFlags().IntSliceVarP(&minMax, "range", "r", []int{}, "range of nums")
+	rnCmd.PersistentFlags().IntVarP(&nameDig, "num-digits", "N", 0, "number of digits for padding new name")
+	rnCmd.PersistentFlags().IntVarP(&nameNum, "num", "n", 0, "number for new name")
+	rnCmd.PersistentFlags().BoolVar(&namePad, "pad", false, "pad new name")
 	rnCmd.Flags().IntVar(&nameMin, "min", 0, "start count at...")
 	rnCmd.Flags().IntVar(&nameMax, "max", 0, "end count with...")
-	rnCmd.Flags().BoolVar(&namePad, "pad", false, "pad new name")
 }

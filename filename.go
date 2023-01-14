@@ -27,6 +27,7 @@ func NewFilename(n string) *Filename {
 	}
 	return name
 }
+
 func (n Filename) Copy() *Filename {
 	name := &Filename{
 		Name:      n.Name,
@@ -85,14 +86,24 @@ func (n *Filename) Prefix(pre string) *Filename {
 	return n
 }
 
-func (n *Filename) Pad(p string) *Filename {
-	n.padding = p
+func (n *Filename) Pad() *Filename {
 	n.pad = true
 	return n
 }
 
+func (n *Filename) Fmt(p string) *Filename {
+	n.padding = p
+	return n
+}
+
+func (n *Filename) Zeros(z int) *Filename {
+	n.padding = fmt.Sprintf("%%0%dd", z)
+	n.Pad()
+	return n
+}
+
 func (n *Filename) Num(i int) *Filename {
-	n.pad = true
+	n.Pad()
 	n.num = i
 	return n
 }

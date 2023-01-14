@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -48,8 +47,7 @@ func NewName(cmd *cobra.Command, name *fidi.Filename) *fidi.Filename {
 	}
 
 	if cmd.Flags().Changed("num-digits") {
-		p := fmt.Sprintf("%0%vd", nameDig)
-		name.Pad(p)
+		name.Zeros(nameDig)
 	}
 
 	if cmd.Flags().Changed("num") {
@@ -57,6 +55,7 @@ func NewName(cmd *cobra.Command, name *fidi.Filename) *fidi.Filename {
 	}
 
 	if cmd.Flags().Changed("pad") {
+		name.Pad()
 	}
 
 	return name

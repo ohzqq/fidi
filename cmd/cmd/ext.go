@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -21,22 +22,15 @@ var extCmd = &cobra.Command{
 
 		dir := CWD()
 		files := dir.Filter(fidi.ExtFilter(ext))
-		for _, file := range files {
-			println(file.Path())
+		for idx, file := range files {
+			fn := file.Filename.Copy()
+			fn.Fmt("%03d").Num(idx + 1)
+			name := NewName(cmd, fn)
+			fmt.Printf("new name %s\n", name)
 		}
 	},
 }
 
 func init() {
 	rnCmd.AddCommand(extCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// extCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// extCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
