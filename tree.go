@@ -85,6 +85,38 @@ func (list *Tree) GetNode(index int) (*Dir, error) {
 	return &list.Nodes[index], nil
 }
 
+func (tree Tree) GetNodesAtDepth(d int) []Dir {
+	var nodes []Dir
+	for _, node := range tree.Nodes {
+		if node.Depth == d {
+			nodes = append(nodes, node)
+		}
+	}
+	return nodes
+}
+
+func (tree Tree) GetChildrenByDepth(d int) Tree {
+	if d == 0 {
+		return tree.Nodes
+	}
+
+	cur, err := tree.GetNode(d - 1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var nodes []Dir
+	for i := d + 1; i < len(tree.Nodes); i++ {
+		n := GetNodesAtDepth(tree, i)
+		nodes = append(nodes, n...)
+	}
+
+	return Tree{
+		File:  cur.File,
+		Nodes: nodes,
+	}
+}
+
 type NodeIndexDontExistsError struct {
 	Index int
 }
