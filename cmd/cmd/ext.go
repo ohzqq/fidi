@@ -1,27 +1,29 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
-	"fmt"
+	"log"
+	"strings"
 
+	"github.com/ohzqq/fidi"
 	"github.com/spf13/cobra"
 )
 
 // extCmd represents the ext command
 var extCmd = &cobra.Command{
 	Use:   "ext",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "batch rename files by extension",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("ext called")
+		ext := args[0]
+		if !strings.HasPrefix(ext, ".") {
+			log.Fatalf("prefixes should be prefixed with '.'")
+		}
+
+		dir := CWD()
+		files := dir.Filter(fidi.ExtFilter(ext))
+		for _, file := range files {
+			println(file.Path())
+		}
 	},
 }
 

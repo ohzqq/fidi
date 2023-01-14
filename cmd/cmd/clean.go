@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"strings"
 
 	"github.com/ohzqq/fidi"
@@ -25,20 +23,6 @@ var cleanCmd = &cobra.Command{
 			}
 		}
 	},
-}
-
-func CWD() fidi.Dir {
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	dir, err := fidi.NewDir(cwd)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return dir
 }
 
 func init() {
