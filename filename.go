@@ -22,14 +22,11 @@ type Filename struct {
 }
 
 func NewFilename(n string) *Filename {
-	name := &Filename{
-		padding: "%03d",
-		Name:    n,
-		num:     1,
+	name := &Filename{padding: "%03d", Name: n,
+		num: 1,
 	}
 	return name
 }
-
 func (n Filename) Copy() *Filename {
 	name := &Filename{
 		Name:      n.Name,

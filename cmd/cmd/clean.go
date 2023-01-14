@@ -15,15 +15,7 @@ var cleanCmd = &cobra.Command{
 	Use:   "clean",
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
-		cwd, err := os.Getwd()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		dir, err := fidi.NewDir(cwd)
-		if err != nil {
-			log.Fatal(err)
-		}
+		dir := CWD()
 		fmt.Printf("cwd %s\n", dir.Path())
 
 		for _, file := range dir.All {
@@ -33,6 +25,20 @@ var cleanCmd = &cobra.Command{
 			}
 		}
 	},
+}
+
+func CWD() fidi.Dir {
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dir, err := fidi.NewDir(cwd)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return dir
 }
 
 func init() {
