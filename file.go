@@ -17,6 +17,7 @@ type File struct {
 	Mime      string
 	Abs       string
 	Base      string
+	Depth     int
 	Stat      os.FileInfo
 	Template  Template
 	overwrite bool

@@ -117,6 +117,28 @@ func (tree Tree) GetChildrenByDepth(d int) Tree {
 	}
 }
 
+func (tree Tree) GetParentsByDepth(d int) Tree {
+	if d == 0 {
+		return tree
+	}
+
+	cur, err := tree.GetNode(d - 1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var nodes []Dir
+	for i := d + 1; i < len(tree.Nodes); i-- {
+		n := tree.GetNodesAtDepth(i)
+		nodes = append(nodes, n...)
+	}
+
+	return Tree{
+		File:  cur.File,
+		Nodes: nodes,
+	}
+}
+
 type NodeIndexDontExistsError struct {
 	Index int
 }

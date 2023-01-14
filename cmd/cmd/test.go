@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/ohzqq/fidi"
 	"github.com/spf13/cobra"
 )
@@ -11,8 +13,8 @@ var testCmd = &cobra.Command{
 	Short: "A brief description of your command",
 	Run: func(cmd *cobra.Command, args []string) {
 		input := args[0]
-		f := fidi.SanitizeFilename(input)
-		println(f)
+		//f := fidi.SanitizeFilename(input)
+		//println(f)
 		//f := dirfile.NewFile(input)
 		//tmpl := template.Must(template.New("toot").Parse("test"))
 		//f := fidi.NewFile(input)
@@ -31,25 +33,26 @@ var testCmd = &cobra.Command{
 		//f.Save("toot.txt")
 
 		//f := dirfile.ExtFileNames(input, ".html")
-		//f := dirfile.NewTree(input)
-		//fmt.Printf("tree path %+V\n", f)
+		f := fidi.NewTree(input)
+		fmt.Printf("tree path %+V\n", f.Rel())
 		//fmt.Printf("tree dir %+V\n", f.Dir)
 		//fmt.Printf("tree base %+V\n", f.Base)
 		//fmt.Printf("tree name %+V\n", f.Name)
 		//fmt.Printf("tree root %+V\n", f.Root)
 		//fmt.Printf("tree ext %+V\n", f.Extension)
 
-		//for _, node := range f.Nodes {
-		//  fmt.Printf("node path %+V\n", node.Rel())
-		//  //fi := node.FilterFilesByExt(".html")
-		//  fi := dirfile.ExtFilter(".html")
-		//  //fi := dirfile.MimeFilter("image")
-		//  files := node.Filter(fi)
-		//  for _, file := range files {
-		//    fmt.Printf("file name %+V\n", file.Path())
-		//  }
+		for _, node := range f.Nodes {
+			fmt.Printf("node path %+V\n", node.Rel())
+			//  //fi := node.FilterFilesByExt(".html")
+			//  fi := dirfile.ExtFilter(".html")
+			//  //fi := dirfile.MimeFilter("image")
+			//  files := node.Filter(fi)
+			for _, file := range node.Tree.Nodes {
+				fmt.Printf("child path %+V\n", file.Rel())
+				fmt.Printf("child name %+V\n", file.Depth)
+			}
 
-		//}
+		}
 
 	},
 }
