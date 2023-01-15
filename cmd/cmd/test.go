@@ -40,9 +40,8 @@ var testCmd = &cobra.Command{
 		//fmt.Printf("tree name %+V\n", f.Name)
 		//fmt.Printf("tree root %+V\n", f.Root)
 		//fmt.Printf("tree ext %+V\n", f.Extension)
-		f.GetChildren()
 
-		for _, node := range f.Nodez {
+		for _, node := range f.Nodes {
 			fmt.Printf("node path %+V\n", node.Rel())
 			//  //fi := node.FilterFilesByExt(".html")
 			//  fi := dirfile.ExtFilter(".html")

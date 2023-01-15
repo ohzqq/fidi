@@ -2,9 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
-	"github.com/ohzqq/fidi"
 	"github.com/spf13/cobra"
 )
 
@@ -16,12 +14,13 @@ var cleanCmd = &cobra.Command{
 		dir := CWD()
 		fmt.Printf("cwd %s\n", dir.Path())
 
-		for _, file := range dir.All {
-			if !strings.HasPrefix(file.Base, ".") {
-				n := fidi.SanitizeFilename(file.Base)
-				fmt.Printf("old: %s, new: %s\n", file.Base, n)
-			}
-		}
+		//for _, file := range dir.All {
+		//  if !strings.HasPrefix(file.Base, ".") {
+		//    n := fidi.SanitizeFilename(file.Base)
+		//    fmt.Printf("old: %s, new: %s\n", file.Base, n)
+		//  }
+		//}
+
 	},
 }
 

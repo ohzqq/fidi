@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
-	"github.com/ohzqq/fidi"
 	"github.com/spf13/cobra"
 )
 
@@ -26,23 +23,23 @@ var rnCmd = &cobra.Command{
 	Short: "batch rename files",
 	Args:  cobra.MaximumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		var dirs []fidi.Dir
-		if len(args) > 0 {
-			if d := args[0]; d != "" {
-				dirs = GetDirs(cmd, d)
-			}
-		}
-		if len(args) > 1 {
-			//if ext := args[1]; ext != "" {
-			//  files = dir.Filter(fidi.ExtFilter(ext))
-			//}
-		}
+		//var dirs []fidi.Dir
+		//if len(args) > 0 {
+		//if d := args[0]; d != "" {
+		//dirs = GetDirs(cmd, d)
+		//}
+		//}
+		//if len(args) > 1 {
+		//if ext := args[1]; ext != "" {
+		//  files = dir.Filter(fidi.ExtFilter(ext))
+		//}
+		//}
 		//fmt.Printf("dir %s\n", dir.Path())
 
-		for _, dir := range dirs {
-			name := NewName(cmd, dir.Filename)
-			fmt.Printf("name %s\n", name)
-		}
+		//for _, dir := range dirs {
+		//name := NewName(cmd, dir.Filename)
+		//fmt.Printf("name %s\n", name)
+		//}
 	},
 }
 
