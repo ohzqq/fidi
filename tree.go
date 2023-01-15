@@ -61,24 +61,6 @@ func NewTree(path string) Tree {
 		}
 	}
 
-	for _, node := range tree.nodes {
-		t := Tree{
-			Dir:     node,
-			nodes:   tree.nodes[node.Depth:],
-			Parents: tree.nodes[:node.Depth-1],
-		}
-		for _, n := range t.nodes {
-			if strings.Contains(n.Abs, node.Name) && node.Name != n.Name {
-				t.Children = append(t.Children, n)
-			}
-		}
-		tree.Nodes = append(tree.Nodes, t)
-		node.Root = path
-		for _, file := range node.Files {
-			file.Root = path
-		}
-	}
-
 	return tree
 }
 
