@@ -14,18 +14,29 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 const StartDepth = 1
 
 type Tree struct {
 	File
-	Nodes   []Dir
-	Reverse map[string]int
+	//Dir
+	Children []Dir
+	Parents  []Dir
+	Nodes    []Dir
+	Nodez    []Tree
+	Reverse  map[string]int
+	reverse  map[string]int
 }
 
 func NewTree(path string) Tree {
+	//dir, err := NewDir(path)
+	//if err != nil {
+	//  log.Fatal(err)
+	//}
 	tree := Tree{
+		//Dir: dir,
 		File: NewFile(path),
 	}
 
@@ -35,6 +46,17 @@ func NewTree(path string) Tree {
 	}
 
 	for _, node := range tree.Nodes {
+		t := Tree{
+			File:    node.File,
+			Nodes:   tree.Nodes[node.Depth:],
+			Parents: tree.Nodes[:node.Depth-1],
+		}
+		for _, n := range t.Nodes {
+			if strings.Contains(n.Abs, node.Name) && node.Name != n.Name {
+				t.Children = append(t.Children, n)
+			}
+		}
+		tree.Nodez = append(tree.Nodez, t)
 		node.Root = path
 		for _, file := range node.Files {
 			file.Root = path
@@ -54,6 +76,16 @@ func (list *Tree) Add(node Dir) {
 	list.Reverse[node.rel] = len(list.Nodes) - 1
 }
 
+func (list *Tree) AddNode(node Tree) {
+	list.Nodez = append(list.Nodez, node)
+
+	if list.reverse == nil {
+		list.reverse = make(map[string]int)
+	}
+
+	list.reverse[node.rel] = len(list.Nodez) - 1
+}
+
 func (list *Tree) Scan(path string, depth int, ignoreErr bool) error {
 	path += string(os.PathSeparator)
 
@@ -61,9 +93,12 @@ func (list *Tree) Scan(path string, depth int, ignoreErr bool) error {
 	if fillErr != nil && !ignoreErr {
 		return fillErr
 	}
+	//list.Parents = list.Nodes[:depth-1]
 	node.Depth = depth
 
 	list.Add(node)
+
+	//tree.Parents = list.Nodes[:depth-1]
 
 	depth++
 
@@ -92,18 +127,49 @@ func (tree Tree) GetNodesAtDepth(d int) []Dir {
 			nodes = append(nodes, node)
 		}
 	}
+
 	return nodes
 }
 
-func (tree Tree) GetChildrenByDepth(d int) Tree {
-	if d == 0 {
-		return tree
+func (tree Tree) GetNodezAtDepth(d int) []Tree {
+	var nodes []Tree
+	for _, node := range tree.Nodez {
+		if node.Depth == d {
+			nodes = append(nodes, node)
+		}
 	}
 
-	cur, err := tree.GetNode(d - 1)
-	if err != nil {
-		log.Fatal(err)
+	return nodes
+}
+
+func (tree Tree) HasParents() bool {
+	return len(tree.Parents) > 0
+}
+
+func (tree Tree) GetChildren() []Dir {
+	//fmt.Printf("tree path %s\n", tree.Abs)
+	var nodes []Dir
+	for _, node := range tree.Nodes[tree.Depth:] {
+		//fmt.Printf("current node %d\n", node.Name)
+		sub := tree.GetNodesAtDepth(node.Depth + 1)
+		for _, s := range sub {
+			if strings.Contains(s.Abs, node.Name) {
+				nodes = append(nodes, s)
+			}
+		}
 	}
+	return nodes
+}
+
+func (tree Tree) GetChildrenByDepth(d int) []Dir {
+	if d == 0 {
+		return tree.Nodes
+	}
+
+	//cur, err := tree.GetNode(d - 1)
+	//if err != nil {
+	//  log.Fatal(err)
+	//}
 
 	var nodes []Dir
 	for i := d + 1; i < len(tree.Nodes); i++ {
@@ -111,10 +177,11 @@ func (tree Tree) GetChildrenByDepth(d int) Tree {
 		nodes = append(nodes, n...)
 	}
 
-	return Tree{
-		File:  cur.File,
-		Nodes: nodes,
-	}
+	//return Tree{
+	//  File:  cur.File,
+	//  Nodes: nodes,
+	//}
+	return nodes
 }
 
 func (tree Tree) GetParentsByDepth(d int) Tree {
@@ -134,6 +201,7 @@ func (tree Tree) GetParentsByDepth(d int) Tree {
 	}
 
 	return Tree{
+		//Dir:   *cur,
 		File:  cur.File,
 		Nodes: nodes,
 	}

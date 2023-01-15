@@ -40,16 +40,20 @@ var testCmd = &cobra.Command{
 		//fmt.Printf("tree name %+V\n", f.Name)
 		//fmt.Printf("tree root %+V\n", f.Root)
 		//fmt.Printf("tree ext %+V\n", f.Extension)
+		f.GetChildren()
 
-		for _, node := range f.Nodes {
+		for _, node := range f.Nodez {
 			fmt.Printf("node path %+V\n", node.Rel())
 			//  //fi := node.FilterFilesByExt(".html")
 			//  fi := dirfile.ExtFilter(".html")
 			//  //fi := dirfile.MimeFilter("image")
 			//  files := node.Filter(fi)
-			for _, file := range node.Tree.Nodes {
+			for _, file := range node.Parents {
+				fmt.Printf("parent path %+V\n", file.Base)
+			}
+			for _, file := range node.Children {
 				fmt.Printf("child path %+V\n", file.Rel())
-				fmt.Printf("child name %+V\n", file.Depth)
+				//fmt.Printf("child name %+V\n", file.Depth)
 			}
 
 		}

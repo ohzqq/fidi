@@ -12,12 +12,10 @@ type Dir struct {
 	File
 	All          []File
 	Files        []File
-	all          []string
 	SubDirs      []File
-	Children     []Dir
 	FilesCount   int
 	SubDirsCount int
-	Tree
+	//Tree
 }
 
 func NewDir(path string) (Dir, error) {
@@ -46,7 +44,7 @@ func (node *Dir) sort() error {
 		node.All = append(node.All, n)
 
 		if entry.IsDir() {
-			node.Tree = NewTree(e)
+			//node.Tree = NewTree(e)
 		} else {
 			n := NewFile(e)
 			n.rel = e
