@@ -42,6 +42,11 @@ func NewTree(path string) Tree {
 	if err != nil {
 		log.Fatal(err)
 	}
+	for _, n := range tree.nodes {
+		if strings.Contains(n.Abs, tree.Name) && tree.Name != n.Name {
+			tree.Children = append(tree.Children, n)
+		}
+	}
 
 	for _, node := range tree.nodes {
 		t := Tree{

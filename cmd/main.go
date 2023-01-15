@@ -50,10 +50,10 @@ func main() {
 		for _, file := range node.Parents {
 			fmt.Printf("parent path %+V\n", file.Base)
 		}
-		for _, file := range node.Children {
-			fmt.Printf("child path %+V\n", file.Rel())
-			//fmt.Printf("child name %+V\n", file.Depth)
-		}
+		//for _, file := range node.Children {
+		//fmt.Printf("child path %+V\n", file.Rel())
+		//fmt.Printf("child name %+V\n", file.Depth)
+		//}
 
 	}
 
