@@ -46,7 +46,7 @@ func main() {
 		for _, file := range node.Parents() {
 			fmt.Printf("parent path %+V\n", file.Rel())
 		}
-		for _, file := range node.Children() {
+		for _, file := range node.Branches() {
 			fmt.Printf("child path %+V\n", file.Rel())
 			//for _, file := range file.Parents() {
 			//fmt.Printf("parent path %+V\n", file.Rel())
@@ -58,11 +58,11 @@ func main() {
 			//fmt.Printf("sub path %+V\n", f.Base)
 			//}
 			//}
-			for _, file := range node.Leaves() {
-				fmt.Printf("leaf path %+V\n", file.Rel())
-			}
 		}
 
+		for _, file := range node.Filter(fidi.MimeFilter("image")) {
+			fmt.Printf("leaf path %+V\n", file.Rel())
+		}
 	}
 
 }

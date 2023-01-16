@@ -1,7 +1,6 @@
 package fidi
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,72 +10,34 @@ type Filter func(File) bool
 
 type Dir struct {
 	File
-	All []File
-	//Files   []File
-	SubDirs []File
-	//Sub          []Dir
+	entries      []os.DirEntry
+	children     []Tree
+	parents      []Tree
+	nodes        []Dir
+	id           int
 	FilesCount   int
 	SubDirsCount int
-	//Children     []Dir
-	parents []Dir
-	Nodes   []Dir
-	id      int
-	Reverse map[string]int
-	//Tree
+	Reverse      map[string]int
 }
 
 func NewDir(path string) (Dir, error) {
-	//println(path)
 	dir := Dir{
 		File: NewFile(path),
 	}
 	dir.rel = path
 
-	err := dir.sort()
-
-	err = dir.Scan(path, StartDepth, false)
+	entries, err := os.ReadDir(dir.Path())
 	if err != nil {
-		log.Fatal(err)
+		return dir, err
 	}
-
-	for i, _ := range dir.Nodes {
-		n, _ := dir.GetNode(i)
-		node := n.(*Dir)
-		node.Nodes = dir.Nodes
-		node.id = i
-		node.Root = path
-		for _, file := range node.Leaves() {
-			file.Root = path
-		}
-	}
+	dir.entries = entries
 
 	return dir, err
 }
 
-func (node *Dir) sort() error {
-	entries, err := os.ReadDir(node.Path())
-	if err != nil {
-		return err
-	}
-
-	node.All = make([]File, 0, len(entries))
-
-	for _, entry := range entries {
-		e := filepath.Join(node.rel, entry.Name())
-		n := NewFile(e)
-		n.rel = e
-		node.All = append(node.All, n)
-	}
-
-	//node.FilesCount = len(node.Files())
-	//node.SubDirsCount = len(node.Sub())
-
-	return nil
-}
-
-func (node Dir) Children() []Dir {
-	var children []Dir
-	nodes := node.Nodes[node.id+1:]
+func (node Dir) Children() []Tree {
+	var children []Tree
+	nodes := node.nodes[node.id+1:]
 	for _, sub := range nodes {
 		if sub.Depth > node.Depth {
 			children = append(children, sub)
@@ -85,16 +46,24 @@ func (node Dir) Children() []Dir {
 	return children
 }
 
-func (node Dir) Parents() []Dir {
-	parents := node.Nodes[:node.Depth-1]
+func (node Dir) Parents() []Tree {
+	var parents []Tree
+	for _, parent := range node.nodes[:node.Depth-1] {
+		parents = append(parents, parent)
+	}
 	return parents
 }
 
-func (node Dir) Sub() []Dir {
-	var dirs []Dir
-	for _, f := range node.All {
-		if f.Stat.IsDir() {
-			d, _ := NewDir(f.rel)
+func (node Dir) Branches() []Tree {
+	var dirs []Tree
+	for _, f := range node.entries {
+		if f.IsDir() {
+			rel := filepath.Join(node.rel, f.Name())
+			d := NewTree(rel)
+			//d, err := NewDir(rel)
+			//if err != nil {
+			//log.Fatal(err)
+			//}
 			dirs = append(dirs, d)
 		}
 	}
@@ -103,24 +72,27 @@ func (node Dir) Sub() []Dir {
 
 func (node Dir) Leaves() []File {
 	var files []File
-	for _, f := range node.All {
-		if !f.Stat.IsDir() {
-			files = append(files, f)
+	for _, e := range node.entries {
+		if !e.IsDir() {
+			rel := filepath.Join(node.rel, e.Name())
+			file := NewFile(rel)
+			file.rel = rel
+			files = append(files, file)
 		}
 	}
 	return files
 }
 
-func (node Dir) Filter(filter Filter) []File {
-	return FilterFiles(node.Leaves(), filter)
+func (tree Dir) HasParents() bool {
+	return len(tree.parents) > 0
 }
 
-func (list Dir) GetNode(index int) (TreeI, error) {
-	if len(list.Nodes) < index+1 {
-		return &Dir{}, &NodeIndexDontExistsError{Index: index}
-	}
+func (tree Dir) HasChildren() bool {
+	return len(tree.Children()) > 0
+}
 
-	return &list.Nodes[index], nil
+func (node Dir) Filter(filter Filter) []File {
+	return FilterFiles(node.Leaves(), filter)
 }
 
 func FilterFiles(files []File, filter Filter) []File {

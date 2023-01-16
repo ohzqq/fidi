@@ -18,83 +18,57 @@ import (
 
 const StartDepth = 1
 
-type TreeI interface {
-	//GetNode(int) (TreeI, error)
+type Tree interface {
+	GetNode(int) (Tree, error)
 	HasParents() bool
-	//Parents() []Dir
+	Parents() []Tree
 	HasChildren() bool
-	Children() []Dir
+	Children() []Tree
 	Leaves() []File
+	Branches() []Tree
 	Rel() string
 	Filter(filter Filter) []File
 }
 
-type Tree struct {
-	Dir
-	//File
-}
-
-func NewTree(path string) TreeI {
+func NewTree(path string) Tree {
 	dir, err := NewDir(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	//tree := Tree{
-	//  Dir: dir,
-	//}
 
-	//err = dir.Scan(path, StartDepth, false)
-	//if err != nil {
-	//  log.Fatal(err)
-	//}
+	err = dir.Scan(path, StartDepth, false)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	//for _, n := range tree.nodes {
-	//  if strings.Contains(n.Abs, tree.Name) && tree.Name != n.Name {
-	//    tree.Children = append(tree.Children, n)
-	//  }
-	//}
+	for i, _ := range dir.nodes {
+		n, _ := dir.GetNode(i)
+		node := n.(*Dir)
+		node.nodes = dir.nodes
+		node.id = i
+		node.Root = path
+		for _, file := range node.Leaves() {
+			file.Root = path
+		}
+	}
 
 	return dir
 }
 
-//func (list Tree) Children() Tree {
-//  var tree Tree
-//  if len(list.nodes) > 0 {
-//    //first := list.nodes[1]
-//    //name := filepath.Join(first.Root, first.Name)
-//    //tree = NewTree(name)
-//    tree.nodes = list.nodes
-//    //tree.Nodes = list.Nodes[list.Depth:]
-//    //tree = t
-//  }
-//  //tree.Nodes = list.Nodes
-//  //tree.nodes = list.nodes
-
-//  //if len(list.Nodes) > 0 {
-//  //  tree.Nodes = list.Nodes[1:]
-//  //}
-//  return tree
-//}
-
 func (list *Dir) Add(node Dir) {
-	list.Nodes = append(list.Nodes, node)
+	list.nodes = append(list.nodes, node)
 
 	if list.Reverse == nil {
 		list.Reverse = make(map[string]int)
 	}
 
-	list.Reverse[node.rel] = len(list.Nodes) - 1
+	list.Reverse[node.rel] = len(list.nodes) - 1
 }
 
 func (list *Dir) Scan(path string, depth int, ignoreErr bool) error {
 	path += string(os.PathSeparator)
 
-	node := Dir{
-		File: NewFile(path),
-	}
-	node.rel = path
-
-	fillErr := node.sort()
+	node, fillErr := NewDir(path)
 	if fillErr != nil && !ignoreErr {
 		return fillErr
 	}
@@ -105,34 +79,25 @@ func (list *Dir) Scan(path string, depth int, ignoreErr bool) error {
 
 	depth++
 
-	for _, f := range node.Sub() {
-		n := path + f.Name
-		scanErr := list.Scan(n, depth, ignoreErr)
-		if scanErr != nil && !ignoreErr {
-			return scanErr
+	for _, f := range node.entries {
+		if f.IsDir() {
+			n := path + f.Name()
+			scanErr := list.Scan(n, depth, ignoreErr)
+			if scanErr != nil && !ignoreErr {
+				return scanErr
+			}
 		}
 	}
 
 	return nil
 }
 
-func (tree Dir) GetNodesAtDepth(d int) []Dir {
-	var nodes []Dir
-	for _, node := range tree.Nodes {
-		if node.Depth == d {
-			nodes = append(nodes, node)
-		}
+func (list Dir) GetNode(index int) (Tree, error) {
+	if len(list.nodes) < index+1 {
+		return &Dir{}, &NodeIndexDontExistsError{Index: index}
 	}
 
-	return nodes
-}
-
-func (tree Dir) HasParents() bool {
-	return len(tree.parents) > 0
-}
-
-func (tree Dir) HasChildren() bool {
-	return len(tree.Children()) > 0
+	return &list.nodes[index], nil
 }
 
 type NodeIndexDontExistsError struct {
