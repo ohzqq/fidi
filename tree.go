@@ -26,7 +26,6 @@ type Tree interface {
 	Children() []Tree
 	Leaves() []File
 	Branches() []Tree
-	Rel() string
 	Filter(filter Filter) []File
 	Info() File
 }
@@ -48,9 +47,6 @@ func NewTree(path string) Tree {
 		node.nodes = dir.nodes
 		node.id = i
 		node.Root = path
-		for _, file := range node.Leaves() {
-			file.Root = path
-		}
 	}
 
 	return dir

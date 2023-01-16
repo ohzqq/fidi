@@ -14,8 +14,6 @@ import (
 
 type File struct {
 	*Filename
-	Abs       string
-	Base      string
 	Mime      string
 	Depth     int
 	Stat      os.FileInfo
@@ -30,34 +28,28 @@ type Template interface {
 }
 
 func NewFile(n string) File {
-	abs, err := filepath.Abs(n)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	stat, err := os.Stat(abs)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	name := NewFilename(n)
 	name.Root = filepath.Dir(n)
+
+	stat, err := os.Stat(name.Abs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	file := File{
 		Stat:     stat,
-		Abs:      abs,
-		Base:     filepath.Base(abs),
 		Filename: name,
 	}
 
 	if !file.Stat.IsDir() {
-		file.Extension = filepath.Ext(abs)
+		file.Extension = filepath.Ext(file.Abs)
 		file.Name = strings.TrimSuffix(file.Base, file.Extension)
 		file.Mime = mime.TypeByExtension(file.Extension)
-		file.Dir = filepath.Dir(abs)
+		file.Dir = filepath.Dir(file.Abs)
 	} else {
 		file.Name = file.Base
 		file.pad = true
-		file.Dir = abs
+		file.Dir = file.Abs
 	}
 
 	return file

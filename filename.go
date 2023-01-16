@@ -2,11 +2,13 @@ package fidi
 
 import (
 	"fmt"
+	"log"
 	"path/filepath"
-	"strings"
 )
 
 type Filename struct {
+	Abs       string
+	Base      string
 	Dir       string
 	Extension string
 	Name      string
@@ -22,8 +24,17 @@ type Filename struct {
 }
 
 func NewFilename(n string) *Filename {
-	name := &Filename{padding: "%03d", Name: n,
-		num: 1,
+	abs, err := filepath.Abs(n)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	name := &Filename{
+		padding: "%03d",
+		Abs:     abs,
+		Base:    filepath.Base(abs),
+		Name:    n,
+		num:     1,
 	}
 	return name
 }
@@ -46,9 +57,14 @@ func (n Filename) Rename(root string) *Filename {
 }
 
 func (n Filename) Rel() string {
-	s := strings.TrimPrefix(n.rel, n.Root)
-	println(s)
-	return strings.ReplaceAll(n.rel, n.Root, ".")
+	s, err := filepath.Rel(n.Root, n.rel)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if s == "." {
+		return "./"
+	}
+	return "./" + s
 }
 
 func (n Filename) Generate(bounds ...int) []*Filename {
