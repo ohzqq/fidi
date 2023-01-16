@@ -43,27 +43,10 @@ func (node *Dir) sort() error {
 		n := NewFile(e)
 		n.rel = e
 		node.All = append(node.All, n)
-
-		//if entry.IsDir() {
-		//  //d, _ := NewDir(e)
-		//  //node.Sub = append(node.Sub, d)
-		//} else {
-		//  n := NewFile(e)
-		//  n.rel = e
-		//  node.Files = append(node.Files, n)
-		//}
 	}
 
-	//for _, f := range node.All {
-	//  if f.Stat.IsDir() {
-	//    node.SubDirs = append(node.SubDirs, f)
-	//  } else {
-	//    //node.Files = append(node.Files, f)
-	//  }
-	//}
-
-	node.FilesCount = len(node.Files())
-	node.SubDirsCount = len(node.Sub())
+	//node.FilesCount = len(node.Files())
+	//node.SubDirsCount = len(node.Sub())
 
 	return nil
 }
