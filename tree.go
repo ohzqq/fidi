@@ -14,59 +14,47 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 )
 
 const StartDepth = 1
 
-type Tree struct {
-	Dir
-	Children []Dir
-	Parents  []Dir
-	nodes    []Dir
-	Nodes    []Tree
-	Reverse  map[string]int
-	reverse  map[string]int
+type TreeI interface {
+	//GetNode(int) (TreeI, error)
+	HasParents() bool
+	//Parents() []Dir
+	HasChildren() bool
+	Children() []Dir
+	Leaves() []File
+	Rel() string
+	Filter(filter Filter) []File
 }
 
-func NewTree(path string) Tree {
+type Tree struct {
+	Dir
+	//File
+}
+
+func NewTree(path string) TreeI {
 	dir, err := NewDir(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	tree := Tree{
-		Dir: dir,
-	}
+	//tree := Tree{
+	//  Dir: dir,
+	//}
 
-	err = tree.Scan(path, StartDepth, false)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, n := range tree.nodes {
-		if strings.Contains(n.Abs, tree.Name) && tree.Name != n.Name {
-			tree.Children = append(tree.Children, n)
-		}
-	}
+	//err = dir.Scan(path, StartDepth, false)
+	//if err != nil {
+	//  log.Fatal(err)
+	//}
 
-	for _, node := range tree.nodes {
-		t := Tree{
-			Dir:     node,
-			nodes:   tree.nodes[node.Depth:],
-			Parents: tree.nodes[:node.Depth-1],
-		}
-		for _, n := range t.nodes {
-			if strings.Contains(n.Abs, node.Name) && node.Name != n.Name {
-				t.Children = append(t.Children, n)
-			}
-		}
-		tree.Nodes = append(tree.Nodes, t)
-		node.Root = path
-		//for _, file := range node.Files {
-		//  file.Root = path
-		//}
-	}
+	//for _, n := range tree.nodes {
+	//  if strings.Contains(n.Abs, tree.Name) && tree.Name != n.Name {
+	//    tree.Children = append(tree.Children, n)
+	//  }
+	//}
 
-	return tree
+	return dir
 }
 
 //func (list Tree) Children() Tree {
@@ -88,20 +76,19 @@ func NewTree(path string) Tree {
 //  return tree
 //}
 
-func (list *Tree) Add(node Dir) {
-	list.nodes = append(list.nodes, node)
+func (list *Dir) Add(node Dir) {
+	list.Nodes = append(list.Nodes, node)
 
 	if list.Reverse == nil {
 		list.Reverse = make(map[string]int)
 	}
 
-	list.Reverse[node.rel] = len(list.nodes) - 1
+	list.Reverse[node.rel] = len(list.Nodes) - 1
 }
 
-func (list *Tree) Scan(path string, depth int, ignoreErr bool) error {
+func (list *Dir) Scan(path string, depth int, ignoreErr bool) error {
 	path += string(os.PathSeparator)
 
-	//node, fillErr := NewDir(path)
 	node := Dir{
 		File: NewFile(path),
 	}
@@ -119,7 +106,8 @@ func (list *Tree) Scan(path string, depth int, ignoreErr bool) error {
 	depth++
 
 	for _, f := range node.Sub() {
-		scanErr := list.Scan(path+f.Name, depth, ignoreErr)
+		n := path + f.Name
+		scanErr := list.Scan(n, depth, ignoreErr)
 		if scanErr != nil && !ignoreErr {
 			return scanErr
 		}
@@ -128,17 +116,9 @@ func (list *Tree) Scan(path string, depth int, ignoreErr bool) error {
 	return nil
 }
 
-func (list *Tree) GetNode(index int) (*Dir, error) {
-	if len(list.nodes) < index+1 {
-		return nil, &NodeIndexDontExistsError{Index: index}
-	}
-
-	return &list.nodes[index], nil
-}
-
-func (tree Tree) GetNodesAtDepth(d int) []Dir {
+func (tree Dir) GetNodesAtDepth(d int) []Dir {
 	var nodes []Dir
-	for _, node := range tree.nodes {
+	for _, node := range tree.Nodes {
 		if node.Depth == d {
 			nodes = append(nodes, node)
 		}
@@ -147,12 +127,12 @@ func (tree Tree) GetNodesAtDepth(d int) []Dir {
 	return nodes
 }
 
-func (tree Tree) HasParents() bool {
-	return len(tree.Parents) > 0
+func (tree Dir) HasParents() bool {
+	return len(tree.parents) > 0
 }
 
-func (tree Tree) HasChildren() bool {
-	return len(tree.Children) > 0
+func (tree Dir) HasChildren() bool {
+	return len(tree.Children()) > 0
 }
 
 type NodeIndexDontExistsError struct {

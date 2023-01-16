@@ -41,21 +41,27 @@ func main() {
 	//fmt.Printf("tree root %+V\n", f.Root)
 	//fmt.Printf("tree ext %+V\n", f.Extension)
 
-	for _, node := range f.Children {
+	for _, node := range f.Children() {
 		fmt.Printf("node path %+V\n", node.Rel())
-		//  //fi := node.FilterFilesByExt(".html")
-		//  fi := dirfile.ExtFilter(".html")
-		//  //fi := dirfile.MimeFilter("image")
-		//  files := node.Filter(fi)
-		for _, file := range node.Sub() {
-			fmt.Printf("sub path %+V\n", file.Base)
-			for _, f := range file.Sub() {
-				fmt.Printf("sub path %+V\n", f.Base)
+		for _, file := range node.Parents() {
+			fmt.Printf("parent path %+V\n", file.Rel())
+		}
+		for _, file := range node.Children() {
+			fmt.Printf("child path %+V\n", file.Rel())
+			//for _, file := range file.Parents() {
+			//fmt.Printf("parent path %+V\n", file.Rel())
+			//}
+			//for _, file := range file.Children() {
+			//fmt.Printf("chu path %+V\n", file.Rel())
+			//}
+			//for _, f := range file.Sub() {
+			//fmt.Printf("sub path %+V\n", f.Base)
+			//}
+			//}
+			for _, file := range node.Leaves() {
+				fmt.Printf("leaf path %+V\n", file.Rel())
 			}
 		}
-		//for _, file := range node.Children {
-		//fmt.Printf("child path %+V\n", file.Rel())
-		//}
 
 	}
 
