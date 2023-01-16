@@ -43,6 +43,8 @@ func (n Filename) Copy() *Filename {
 	name := &Filename{
 		Name:      n.Name,
 		Dir:       n.Dir,
+		Base:      n.Base,
+		Abs:       n.Abs,
 		Extension: n.Extension,
 		padding:   n.padding,
 		pad:       n.pad,
