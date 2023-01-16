@@ -10,9 +10,10 @@ type Filter func(File) bool
 
 type Dir struct {
 	File
-	All          []File
-	Files        []File
-	SubDirs      []File
+	All []File
+	//Files   []File
+	SubDirs []File
+	//Sub          []Dir
 	FilesCount   int
 	SubDirsCount int
 	//Tree
@@ -43,31 +44,53 @@ func (node *Dir) sort() error {
 		n.rel = e
 		node.All = append(node.All, n)
 
-		if entry.IsDir() {
-			//node.Tree = NewTree(e)
-		} else {
-			n := NewFile(e)
-			n.rel = e
-			node.Files = append(node.Files, n)
-		}
+		//if entry.IsDir() {
+		//  //d, _ := NewDir(e)
+		//  //node.Sub = append(node.Sub, d)
+		//} else {
+		//  n := NewFile(e)
+		//  n.rel = e
+		//  node.Files = append(node.Files, n)
+		//}
 	}
 
-	for _, f := range node.All {
-		if f.Stat.IsDir() {
-			node.SubDirs = append(node.SubDirs, f)
-		} else {
-			//node.Files = append(node.Files, f)
-		}
-	}
+	//for _, f := range node.All {
+	//  if f.Stat.IsDir() {
+	//    node.SubDirs = append(node.SubDirs, f)
+	//  } else {
+	//    //node.Files = append(node.Files, f)
+	//  }
+	//}
 
-	node.FilesCount = len(node.Files)
-	node.SubDirsCount = len(node.SubDirs)
+	node.FilesCount = len(node.Files())
+	node.SubDirsCount = len(node.Sub())
 
 	return nil
 }
 
+func (node Dir) Sub() []Dir {
+	var dirs []Dir
+	for _, f := range node.All {
+		if f.Stat.IsDir() {
+			d, _ := NewDir(f.rel)
+			dirs = append(dirs, d)
+		}
+	}
+	return dirs
+}
+
+func (node Dir) Files() []File {
+	var files []File
+	for _, f := range node.All {
+		if !f.Stat.IsDir() {
+			files = append(files, f)
+		}
+	}
+	return files
+}
+
 func (node Dir) Filter(filter Filter) []File {
-	return FilterFiles(node.Files, filter)
+	return FilterFiles(node.Files(), filter)
 }
 
 func FilterFiles(files []File, filter Filter) []File {

@@ -61,13 +61,32 @@ func NewTree(path string) Tree {
 		}
 		tree.Nodes = append(tree.Nodes, t)
 		node.Root = path
-		for _, file := range node.Files {
-			file.Root = path
-		}
+		//for _, file := range node.Files {
+		//  file.Root = path
+		//}
 	}
 
 	return tree
 }
+
+//func (list Tree) Children() Tree {
+//  var tree Tree
+//  if len(list.nodes) > 0 {
+//    //first := list.nodes[1]
+//    //name := filepath.Join(first.Root, first.Name)
+//    //tree = NewTree(name)
+//    tree.nodes = list.nodes
+//    //tree.Nodes = list.Nodes[list.Depth:]
+//    //tree = t
+//  }
+//  //tree.Nodes = list.Nodes
+//  //tree.nodes = list.nodes
+
+//  //if len(list.Nodes) > 0 {
+//  //  tree.Nodes = list.Nodes[1:]
+//  //}
+//  return tree
+//}
 
 func (list *Tree) Add(node Dir) {
 	list.nodes = append(list.nodes, node)
@@ -82,17 +101,24 @@ func (list *Tree) Add(node Dir) {
 func (list *Tree) Scan(path string, depth int, ignoreErr bool) error {
 	path += string(os.PathSeparator)
 
-	node, fillErr := NewDir(path)
+	//node, fillErr := NewDir(path)
+	node := Dir{
+		File: NewFile(path),
+	}
+	node.rel = path
+
+	fillErr := node.sort()
 	if fillErr != nil && !ignoreErr {
 		return fillErr
 	}
+
 	node.Depth = depth
 
 	list.Add(node)
 
 	depth++
 
-	for _, f := range node.SubDirs {
+	for _, f := range node.Sub() {
 		scanErr := list.Scan(path+f.Name, depth, ignoreErr)
 		if scanErr != nil && !ignoreErr {
 			return scanErr
