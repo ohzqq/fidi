@@ -13,6 +13,9 @@ func main() {
 
 	//cmd.Execute()
 	input := os.Args[1]
+	tree(input)
+	//f := fidi.NewFile(input)
+	//printFileInfo(f)
 	//f := fidi.SanitizeFilename(input)
 	//println(f)
 	//f := dirfile.NewFile(input)
@@ -33,21 +36,39 @@ func main() {
 	//f.Save("toot.txt")
 
 	//f := dirfile.ExtFileNames(input, ".html")
+
+}
+
+func tree(input string) {
 	f := fidi.NewTree(input)
 	fmt.Printf("tree path %+V\n", f.Rel())
-	//fmt.Printf("tree dir %+V\n", f.Dir)
-	//fmt.Printf("tree base %+V\n", f.Base)
-	//fmt.Printf("tree name %+V\n", f.Name)
-	//fmt.Printf("tree root %+V\n", f.Root)
-	//fmt.Printf("tree ext %+V\n", f.Extension)
-
+	//printFileInfo(f.Info())
 	for _, node := range f.Children() {
-		fmt.Printf("node path %+V\n", node.Rel())
+		d := node.(fidi.Dir)
+		fmt.Printf("%d: node path %+V\n", d.Depth, node.Rel())
+		//printFileInfo(node.Info())
+
+		//for _, file := range node.Filter(fidi.MimeFilter("image")) {
 		for _, file := range node.Parents() {
-			fmt.Printf("parent path %+V\n", file.Rel())
+			d := file.(fidi.Dir)
+			fmt.Printf("%d: parent path %+V\n", d.Depth, file.Rel())
+			//printFileInfo(file.Info())
 		}
-		for _, file := range node.Branches() {
+		for _, file := range node.Leaves() {
+			fmt.Printf("%d: leaf path %+V\n", file.Depth, file.Rel())
+			//printFileInfo(file)
+		}
+		for _, file := range node.Children() {
 			fmt.Printf("child path %+V\n", file.Rel())
+			//printFileInfo(file.Info())
+			for _, sub := range file.Parents() {
+				fmt.Printf("sub parent path %+V\n", sub.Rel())
+				//printFileInfo(sub.Info())
+			}
+			for _, sub := range file.Leaves() {
+				fmt.Printf("%d: sub leaf path %+V\n", sub.Depth, sub.Rel())
+				//printFileInfo(sub)
+			}
 			//for _, file := range file.Parents() {
 			//fmt.Printf("parent path %+V\n", file.Rel())
 			//}
@@ -59,10 +80,14 @@ func main() {
 			//}
 			//}
 		}
-
-		for _, file := range node.Filter(fidi.MimeFilter("image")) {
-			fmt.Printf("leaf path %+V\n", file.Rel())
-		}
 	}
+}
 
+func printFileInfo(f fidi.File) {
+	fmt.Printf("file abs %+V\n", f.Abs)
+	fmt.Printf("file base %+V\n", f.Base)
+	fmt.Printf("file dir %+V\n", f.Dir)
+	fmt.Printf("file ext %+V\n", f.Extension)
+	fmt.Printf("file name %+V\n", f.Name)
+	fmt.Printf("file root %+V\n", f.Root)
 }

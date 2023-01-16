@@ -14,9 +14,9 @@ import (
 
 type File struct {
 	*Filename
-	Mime      string
 	Abs       string
 	Base      string
+	Mime      string
 	Depth     int
 	Stat      os.FileInfo
 	Template  Template

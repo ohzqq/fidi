@@ -28,6 +28,7 @@ type Tree interface {
 	Branches() []Tree
 	Rel() string
 	Filter(filter Filter) []File
+	Info() File
 }
 
 func NewTree(path string) Tree {

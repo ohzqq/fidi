@@ -10,8 +10,8 @@ type Filename struct {
 	Dir       string
 	Extension string
 	Name      string
-	rel       string
 	Root      string
+	rel       string
 	padding   string
 	pad       bool
 	prefix    string
@@ -46,6 +46,8 @@ func (n Filename) Rename(root string) *Filename {
 }
 
 func (n Filename) Rel() string {
+	s := strings.TrimPrefix(n.rel, n.Root)
+	println(s)
 	return strings.ReplaceAll(n.rel, n.Root, ".")
 }
 

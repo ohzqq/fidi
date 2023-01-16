@@ -10,14 +10,12 @@ type Filter func(File) bool
 
 type Dir struct {
 	File
-	entries      []os.DirEntry
-	children     []Tree
-	parents      []Tree
-	nodes        []Dir
-	id           int
-	FilesCount   int
-	SubDirsCount int
-	Reverse      map[string]int
+	entries  []os.DirEntry
+	children []Tree
+	parents  []Tree
+	nodes    []Dir
+	id       int
+	Reverse  map[string]int
 }
 
 func NewDir(path string) (Dir, error) {
@@ -33,6 +31,10 @@ func NewDir(path string) (Dir, error) {
 	dir.entries = entries
 
 	return dir, err
+}
+
+func (node Dir) Info() File {
+	return node.File
 }
 
 func (node Dir) Children() []Tree {
@@ -60,10 +62,6 @@ func (node Dir) Branches() []Tree {
 		if f.IsDir() {
 			rel := filepath.Join(node.rel, f.Name())
 			d := NewTree(rel)
-			//d, err := NewDir(rel)
-			//if err != nil {
-			//log.Fatal(err)
-			//}
 			dirs = append(dirs, d)
 		}
 	}
@@ -76,6 +74,7 @@ func (node Dir) Leaves() []File {
 		if !e.IsDir() {
 			rel := filepath.Join(node.rel, e.Name())
 			file := NewFile(rel)
+			file.Root = node.Root
 			file.rel = rel
 			files = append(files, file)
 		}
