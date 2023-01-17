@@ -75,6 +75,7 @@ func (node Dir) Leaves() []File {
 	var files []File
 	for _, e := range node.entries {
 		if !e.IsDir() {
+			println(node.rel)
 			rel := filepath.Join(node.rel, e.Name())
 			file := NewFile(rel)
 			file.Root = node.Root

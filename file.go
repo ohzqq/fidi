@@ -29,28 +29,24 @@ type Template interface {
 }
 
 func NewFile(n string) File {
-	name := NewFilename(n)
-	name.Root = filepath.Dir(n)
+	n = filepath.Clean(n)
+	file := File{
+		Filename: NewFilename(n),
+	}
+	file.Root = filepath.Dir(n)
 
-	stat, err := os.Stat(name.Abs)
+	stat, err := os.Stat(n)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	file := File{
-		fileInfo: stat,
-		Filename: name,
-	}
+	file.fileInfo = stat
 
 	if !file.fileInfo.IsDir() {
-		file.Extension = filepath.Ext(file.Abs)
+		file.Extension = filepath.Ext(file.Name)
 		file.Name = strings.TrimSuffix(file.Base, file.Extension)
 		file.Mime = mime.TypeByExtension(file.Extension)
-		file.Dir = filepath.Dir(file.Abs)
 	} else {
-		file.Name = file.Base
 		file.pad = true
-		file.Dir = file.Abs
 	}
 
 	return file
@@ -58,7 +54,7 @@ func NewFile(n string) File {
 
 func (f File) Path() string {
 	if f.fileInfo.IsDir() {
-		return f.Abs
+		return f.Name
 	}
 	return f.String()
 }

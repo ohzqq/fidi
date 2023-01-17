@@ -35,6 +35,7 @@ func main() {
 	fmt.Printf("%+V\n", string(m))
 
 	printFileInfo(f.Info())
+	printFileInfo(f.Children()[0].Info())
 	for _, file := range f.Children()[0].Leaves() {
 		//fmt.Printf("%d: leaf path %+V\n", file.Depth, file.Rel())
 		printFileInfo(file)
@@ -86,11 +87,12 @@ func tree(input string) {
 }
 
 func printFileInfo(f fidi.File) {
-	fmt.Printf("file abs %+V\n", f.Abs)
+	//fmt.Printf("file abs %+V\n", f.Abs)
 	fmt.Printf("file base %+V\n", f.Base)
 	fmt.Printf("file dir %+V\n", f.Dir)
 	fmt.Printf("file ext %+V\n", f.Extension)
 	fmt.Printf("file name %+V\n", f.Name)
 	fmt.Printf("file root %+V\n", f.Root)
 	fmt.Printf("file rel %+V\n", f.Rel())
+	fmt.Printf("file path %+V\n", f.Path())
 }

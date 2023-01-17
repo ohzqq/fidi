@@ -15,6 +15,7 @@ import (
 	"io/fs"
 	"log"
 	"os"
+	"strings"
 )
 
 const StartDepth = 1
@@ -48,7 +49,7 @@ func NewTree(path string) Tree {
 		node := n.(*Dir)
 		node.nodes = dir.nodes
 		node.id = i
-		node.Root = path
+		node.Root = strings.TrimSuffix(path, "/")
 	}
 
 	return dir

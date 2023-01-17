@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"strings"
 )
 
 type Filename struct {
@@ -24,15 +25,11 @@ type Filename struct {
 }
 
 func NewFilename(n string) *Filename {
-	abs, err := filepath.Abs(n)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	n = strings.TrimSuffix(n, "/")
 	name := &Filename{
 		padding: "%03d",
-		Abs:     abs,
-		Base:    filepath.Base(abs),
+		Base:    filepath.Base(n),
+		Dir:     filepath.Dir(n),
 		Name:    n,
 		num:     1,
 	}
@@ -44,7 +41,6 @@ func (n Filename) Copy() *Filename {
 		Name:      n.Name,
 		Dir:       n.Dir,
 		Base:      n.Base,
-		Abs:       n.Abs,
 		Extension: n.Extension,
 		padding:   n.padding,
 		pad:       n.pad,
