@@ -99,30 +99,8 @@ func (f File) write(wr io.Writer) error {
 	return nil
 }
 
-func (f File) Read(b []byte) (int, error) {
-	data, err := os.ReadFile(f.Path())
-	if err != nil {
-		return 0, err
-	}
-	b = data
-	f.data = data
-
-	return len(data), nil
-}
-
-func (f *File) Stat() (fs.FileInfo, error) {
-	stat, err := os.Stat(f.Abs)
-	if err != nil {
-		return nil, err
-	}
-	f.fileInfo = stat
-
-	return stat, nil
-}
-
-func (f *File) Close() error {
-	err := f.file.Close()
-	return err
+func (f File) Read() ([]byte, error) {
+	return os.ReadFile(f.Path())
 }
 
 func (f *File) Print() {
