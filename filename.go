@@ -60,10 +60,6 @@ func (n Filename) Rel() string {
 		log.Fatal(err)
 	}
 	return s
-	//if s == "." {
-	//  return "./"
-	//}
-	//return "./" + s
 }
 
 func (n Filename) Generate(bounds ...int) []*Filename {
