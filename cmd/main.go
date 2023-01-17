@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 
@@ -13,7 +14,8 @@ func main() {
 
 	//cmd.Execute()
 	input := os.Args[1]
-	tree(input)
+	println(input)
+	//tree(input)
 	//f := fidi.NewFile(input)
 	//printFileInfo(f)
 	//f := fidi.SanitizeFilename(input)
@@ -23,20 +25,20 @@ func main() {
 	//f := fidi.NewFile(input)
 	//name := f.Copy()
 	//name.Ext(".txt").Num(2)
+	f := fidi.NewTree(input)
+	m, err := fs.ReadFile(f, "Nested 1/meta.toml")
+	//m, err := fs.Glob(f, "*")
+	if err != nil {
+		log.Fatal(err)
+	}
+	//fmt.Printf("%+V\n", m)
+	fmt.Printf("%+V\n", string(m))
 
-	//f.Tmpl(tmpl)
-	//_, err := f.RenderTemplate("")
-	//if err != nil {
-	//log.Fatal(err)
-	//}
-	//err = f.Save(f.Path())
-	//if err != nil {
-	//log.Fatal(err)
-	//}
-	//f.Save("toot.txt")
-
-	//f := dirfile.ExtFileNames(input, ".html")
-
+	printFileInfo(f.Info())
+	for _, file := range f.Children()[0].Leaves() {
+		//fmt.Printf("%d: leaf path %+V\n", file.Depth, file.Rel())
+		printFileInfo(file)
+	}
 }
 
 func tree(input string) {
@@ -90,4 +92,5 @@ func printFileInfo(f fidi.File) {
 	fmt.Printf("file ext %+V\n", f.Extension)
 	fmt.Printf("file name %+V\n", f.Name)
 	fmt.Printf("file root %+V\n", f.Root)
+	fmt.Printf("file rel %+V\n", f.Rel())
 }

@@ -63,10 +63,11 @@ func (n Filename) Rel() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if s == "." {
-		return "./"
-	}
-	return "./" + s
+	return s
+	//if s == "." {
+	//  return "./"
+	//}
+	//return "./" + s
 }
 
 func (n Filename) Generate(bounds ...int) []*Filename {

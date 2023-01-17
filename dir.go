@@ -1,6 +1,7 @@
 package fidi
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +11,7 @@ type Filter func(File) bool
 
 type Dir struct {
 	File
+	fs.FS
 	entries  []os.DirEntry
 	children []Tree
 	parents  []Tree
@@ -21,6 +23,7 @@ type Dir struct {
 func NewDir(path string) (Dir, error) {
 	dir := Dir{
 		File: NewFile(path),
+		FS:   os.DirFS(path),
 	}
 	dir.rel = path
 

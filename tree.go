@@ -12,6 +12,7 @@ package fidi
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 )
@@ -28,6 +29,7 @@ type Tree interface {
 	Branches() []Tree
 	Filter(filter Filter) []File
 	Info() File
+	fs.FS
 }
 
 func NewTree(path string) Tree {

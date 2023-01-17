@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"mime"
 	"os"
@@ -16,7 +17,7 @@ type File struct {
 	*Filename
 	Mime      string
 	Depth     int
-	Stat      os.FileInfo
+	fileInfo  fs.FileInfo
 	Template  Template
 	overwrite bool
 	data      []byte
@@ -37,11 +38,11 @@ func NewFile(n string) File {
 	}
 
 	file := File{
-		Stat:     stat,
+		fileInfo: stat,
 		Filename: name,
 	}
 
-	if !file.Stat.IsDir() {
+	if !file.fileInfo.IsDir() {
 		file.Extension = filepath.Ext(file.Abs)
 		file.Name = strings.TrimSuffix(file.Base, file.Extension)
 		file.Mime = mime.TypeByExtension(file.Extension)
@@ -56,7 +57,7 @@ func NewFile(n string) File {
 }
 
 func (f File) Path() string {
-	if f.Stat.IsDir() {
+	if f.fileInfo.IsDir() {
 		return f.Abs
 	}
 	return f.String()
@@ -102,8 +103,30 @@ func (f File) write(wr io.Writer) error {
 	return nil
 }
 
-func (f File) Read() ([]byte, error) {
-	return os.ReadFile(f.Path())
+func (f File) Read(b []byte) (int, error) {
+	data, err := os.ReadFile(f.Path())
+	if err != nil {
+		return 0, err
+	}
+	b = data
+	f.data = data
+
+	return len(data), nil
+}
+
+func (f *File) Stat() (fs.FileInfo, error) {
+	stat, err := os.Stat(f.Abs)
+	if err != nil {
+		return nil, err
+	}
+	f.fileInfo = stat
+
+	return stat, nil
+}
+
+func (f *File) Close() error {
+	err := f.file.Close()
+	return err
 }
 
 func (f *File) Print() {
@@ -128,7 +151,7 @@ func (f *File) Save(name string) error {
 	if name == f.Path() {
 		if !f.overwrite {
 			return fmt.Errorf("can't save %s, because overwrite isn't set\n", f.Path())
-		} else if f.Stat.IsDir() {
+		} else if f.fileInfo.IsDir() {
 			return fmt.Errorf("can't save, because %s is a directory\n", f.Path())
 		}
 	}
