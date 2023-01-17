@@ -34,9 +34,9 @@ func main() {
 	//fmt.Printf("%+V\n", m)
 	fmt.Printf("%+V\n", string(m))
 
-	printFileInfo(f.Info())
-	printFileInfo(f.Children()[0].Info())
-	for _, file := range f.Children()[0].Leaves() {
+	//printFileInfo(f.Info())
+	//printFileInfo(f.Children()[0].Info())
+	for _, file := range f.Leaves() {
 		//fmt.Printf("%d: leaf path %+V\n", file.Depth, file.Rel())
 		printFileInfo(file)
 	}

@@ -38,6 +38,7 @@ func NewTree(path string) Tree {
 	if err != nil {
 		log.Fatal(err)
 	}
+	dir.Root = path
 
 	err = dir.Scan(path, StartDepth, false)
 	if err != nil {
@@ -50,6 +51,7 @@ func NewTree(path string) Tree {
 		node.nodes = dir.nodes
 		node.id = i
 		node.Root = strings.TrimSuffix(path, "/")
+		println(node.Root)
 	}
 
 	return dir
