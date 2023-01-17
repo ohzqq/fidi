@@ -15,7 +15,6 @@ import (
 	"io/fs"
 	"log"
 	"os"
-	"strings"
 )
 
 const StartDepth = 1
@@ -50,8 +49,7 @@ func NewTree(path string) Tree {
 		node := n.(*Dir)
 		node.nodes = dir.nodes
 		node.id = i
-		node.Root = strings.TrimSuffix(path, "/")
-		println(node.Root)
+		//node.Root = strings.TrimSuffix(path, "/")
 	}
 
 	return dir
@@ -70,7 +68,7 @@ func (list *Dir) Add(node Dir) {
 func (list *Dir) Scan(path string, depth int, ignoreErr bool) error {
 	path += string(os.PathSeparator)
 
-	node, fillErr := NewDir(path)
+	node, fillErr := NewDir(path, list.Root)
 	if fillErr != nil && !ignoreErr {
 		return fillErr
 	}

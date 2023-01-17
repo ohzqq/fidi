@@ -20,12 +20,16 @@ type Dir struct {
 	Reverse  map[string]int
 }
 
-func NewDir(path string) (Dir, error) {
+func NewDir(path string, root ...string) (Dir, error) {
 	dir := Dir{
 		File: NewFile(path),
 		FS:   os.DirFS(path),
 	}
 	dir.rel = path
+
+	if len(root) > 0 {
+		dir.Root = root[0]
+	}
 
 	entries, err := os.ReadDir(dir.Path())
 	if err != nil {
