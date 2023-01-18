@@ -48,10 +48,10 @@ func (node Dir) Children() []Tree {
 	var children []Tree
 	if len(node.nodes) > 0 {
 		nodes := node.nodes[node.id+1:]
-	}
-	for _, sub := range nodes {
-		if sub.Depth > node.Depth {
-			children = append(children, sub)
+		for _, sub := range nodes {
+			if sub.Depth > node.Depth {
+				children = append(children, sub)
+			}
 		}
 	}
 	return children
@@ -61,9 +61,9 @@ func (node Dir) Parents() []Tree {
 	var parents []Tree
 	if len(node.nodes) > 0 {
 		nodes := node.nodes[:node.Depth-1]
-	}
-	for _, parent := range nodes {
-		parents = append(parents, parent)
+		for _, parent := range nodes {
+			parents = append(parents, parent)
+		}
 	}
 	return parents
 }
