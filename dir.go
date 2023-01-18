@@ -46,7 +46,9 @@ func (node Dir) Info() File {
 
 func (node Dir) Children() []Tree {
 	var children []Tree
-	nodes := node.nodes[node.id+1:]
+	if len(node.nodes) > 0 {
+		nodes := node.nodes[node.id+1:]
+	}
 	for _, sub := range nodes {
 		if sub.Depth > node.Depth {
 			children = append(children, sub)
@@ -57,7 +59,10 @@ func (node Dir) Children() []Tree {
 
 func (node Dir) Parents() []Tree {
 	var parents []Tree
-	for _, parent := range node.nodes[:node.Depth-1] {
+	if len(node.nodes) > 0 {
+		nodes := node.nodes[:node.Depth-1]
+	}
+	for _, parent := range nodes {
 		parents = append(parents, parent)
 	}
 	return parents
