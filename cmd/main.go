@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/fs"
 	"log"
 	"os"
 
@@ -15,37 +14,67 @@ func main() {
 	//cmd.Execute()
 	input := os.Args[1]
 	println(input)
-	//tree(input)
-	//f := fidi.NewFile(input)
-	//printFileInfo(f)
-	//f := fidi.SanitizeFilename(input)
-	//println(f)
-	//f := dirfile.NewFile(input)
-	//tmpl := template.Must(template.New("toot").Parse("test"))
-	//f := fidi.NewFile(input)
-	//name := f.Copy()
-	//name.Ext(".txt").Num(2)
-	f := fidi.NewTree(input)
-	m, err := fs.ReadFile(f, "Nested 1/meta.toml")
-	//m, err := fs.Glob(f, "*")
+	//dir(input)
+	file(input)
+	//f := fidi.NewTree(input)
+	//m, err := fs.ReadFile(f, "Nested 1/meta.toml")
+
+	//printFileInfo(f.Info())
+
+	//for _, file := range f.Leaves() {
+	//fmt.Printf("%d: leaf path %+V\n", file.Depth, file.Rel())
+	//printFileInfo(file)
+	//}
+
+	//printFileInfo(f.Children()[0].Info())
+	//for _, file := range f.Children()[0].Leaves() {
+	//fmt.Printf("%d: leaf path %+V\n", file.Depth, file.Rel())
+	//printFileInfo(file)
+	//}
+}
+
+func dir(input string) {
+	f, err := fidi.NewDir(input)
 	if err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Printf("%+V\n", m)
-	fmt.Printf("%+V\n", string(m))
 
-	printFileInfo(f.Info())
+	//m, err := f.Glob("*")
+	//m, err := f.Open("meta.toml")
+	//if err != nil {
+	//log.Fatal(err)
+	//}
 
-	for _, file := range f.Leaves() {
-		//fmt.Printf("%d: leaf path %+V\n", file.Depth, file.Rel())
-		printFileInfo(file)
+	//info, err := m.Stat()
+	//if err != nil {
+	//  log.Fatal(err)
+	//}
+
+	//var buf []byte
+	//i, err := m.Read(buf)
+	//if err != nil {
+	//log.Fatal(err)
+	//}
+
+	i, err := f.ReadFile("meta.toml")
+	if err != nil {
+		log.Fatal(err)
 	}
+	fmt.Printf("%+V\n", string(i))
+}
 
-	printFileInfo(f.Children()[0].Info())
-	for _, file := range f.Children()[0].Leaves() {
-		//fmt.Printf("%d: leaf path %+V\n", file.Depth, file.Rel())
-		printFileInfo(file)
+func file(input string) {
+	f := fidi.NewFile(input)
+	printFileInfo(f)
+	err := f.Read()
+	if err != nil {
+		log.Fatal(err)
 	}
+	f.Print()
+	fmt.Printf("name %s\n", f.String())
+	name := f.Copy()
+	name.Ext(".txt").Num(2)
+	fmt.Printf("new name %s\n", name.String())
 }
 
 func tree(input string) {

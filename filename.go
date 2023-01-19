@@ -2,23 +2,25 @@ package fidi
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"path/filepath"
 	"strings"
 )
 
 type Filename struct {
-	Abs       string
 	Base      string
 	Dir       string
 	Extension string
 	Name      string
 	Root      string
+	abs       string
 	rel       string
 	padding   string
 	pad       bool
 	prefix    string
 	suffix    string
+	FileInfo  fs.FileInfo
 	num       int
 	min       int
 	max       int
@@ -130,8 +132,6 @@ func (n Filename) String() string {
 	}
 
 	name = fmt.Sprintf("%s%s%s", name, padding, n.Extension)
-
-	name = filepath.Join(n.Dir, name)
 
 	return name
 }

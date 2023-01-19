@@ -11,7 +11,7 @@ type Filter func(File) bool
 
 type Dir struct {
 	File
-	fs.FS
+	fsys     fs.FS
 	entries  []os.DirEntry
 	children []Tree
 	parents  []Tree
@@ -23,7 +23,7 @@ type Dir struct {
 func NewDir(path string, root ...string) (Dir, error) {
 	dir := Dir{
 		File: NewFile(path),
-		FS:   os.DirFS(path),
+		fsys: os.DirFS(path),
 	}
 	dir.rel = path
 
@@ -42,6 +42,22 @@ func NewDir(path string, root ...string) (Dir, error) {
 
 func (node Dir) Info() File {
 	return node.File
+}
+
+func (node Dir) Glob(pattern string) ([]string, error) {
+	return fs.Glob(node.fsys, pattern)
+}
+
+func (node Dir) ReadFile(name string) ([]byte, error) {
+	return fs.ReadFile(node.fsys, name)
+}
+
+func (node Dir) ReadDir(name string) ([]fs.DirEntry, error) {
+	return fs.ReadDir(node.fsys, name)
+}
+
+func (node Dir) Open(name string) (fs.File, error) {
+	return node.fsys.Open(name)
 }
 
 func (node Dir) Children() []Tree {
