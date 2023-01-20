@@ -111,7 +111,7 @@ func (node Dir) Leaves() []File {
 }
 
 func (tree Dir) HasParents() bool {
-	return len(tree.parents) > 0
+	return len(tree.Parents()) > 0
 }
 
 func (tree Dir) HasChildren() bool {

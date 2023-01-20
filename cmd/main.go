@@ -14,8 +14,9 @@ func main() {
 	//cmd.Execute()
 	input := os.Args[1]
 	println(input)
+	tree(input)
 	//dir(input)
-	file(input)
+	//file(input)
 	//f := fidi.NewTree(input)
 	//m, err := fs.ReadFile(f, "Nested 1/meta.toml")
 
@@ -84,40 +85,42 @@ func tree(input string) {
 	for _, node := range f.Children() {
 		d := node.(fidi.Dir)
 		fmt.Printf("%d: node path %+V\n", d.Depth, node.Info().Rel())
+		fmt.Printf("parents %+V\n", node.HasParents())
 		//printFileInfo(node.Info())
 
 		//for _, file := range node.Filter(fidi.MimeFilter("image")) {
-		for _, file := range node.Parents() {
-			d := file.(fidi.Dir)
-			fmt.Printf("%d: parent path %+V\n", d.Depth, file.Info().Rel())
-			//printFileInfo(file.Info())
-		}
-		for _, file := range node.Leaves() {
-			fmt.Printf("%d: leaf path %+V\n", file.Depth, file.Rel())
-			//printFileInfo(file)
-		}
-		for _, file := range node.Children() {
-			fmt.Printf("child path %+V\n", file.Info().Rel())
-			//printFileInfo(file.Info())
-			for _, sub := range file.Parents() {
-				fmt.Printf("sub parent path %+V\n", sub.Info().Rel())
-				//printFileInfo(sub.Info())
-			}
-			for _, sub := range file.Leaves() {
-				fmt.Printf("%d: sub leaf path %+V\n", sub.Depth, sub.Rel())
-				//printFileInfo(sub)
-			}
-			//for _, file := range file.Parents() {
-			//fmt.Printf("parent path %+V\n", file.Rel())
-			//}
-			//for _, file := range file.Children() {
-			//fmt.Printf("chu path %+V\n", file.Rel())
-			//}
-			//for _, f := range file.Sub() {
-			//fmt.Printf("sub path %+V\n", f.Base)
-			//}
-			//}
-		}
+		//for _, file := range node.Parents() {
+		//  d := file.(fidi.Dir)
+		//  fmt.Printf("%d: parent path %+V\n", d.Depth, file.Info().Rel())
+		//  //printFileInfo(file.Info())
+		//}
+		//for _, file := range node.Leaves() {
+		//  fmt.Printf("%d: leaf path %+V\n", file.Depth, file.Rel())
+		//  //printFileInfo(file)
+		//}
+		//for _, file := range node.Children() {
+		//  fmt.Printf("child path %+V\n", file.Info().Rel())
+		//  //printFileInfo(file.Info())
+		//  for _, sub := range file.Parents() {
+		//    fmt.Printf("sub parent path %+V\n", sub.Info().Rel())
+		//    //printFileInfo(sub.Info())
+		//  }
+		//  for _, sub := range file.Leaves() {
+		//    fmt.Printf("%d: sub leaf path %+V\n", sub.Depth, sub.Rel())
+		//    //printFileInfo(sub)
+		//  }
+		//  //for _, file := range file.Parents() {
+		//  //fmt.Printf("parent path %+V\n", file.Rel())
+		//  //}
+		//  //for _, file := range file.Children() {
+		//  //fmt.Printf("chu path %+V\n", file.Rel())
+		//  //}
+		//  //for _, f := range file.Sub() {
+		//  //fmt.Printf("sub path %+V\n", f.Base)
+		//  //}
+		//  //}
+		//}
+
 	}
 }
 
