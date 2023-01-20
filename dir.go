@@ -104,6 +104,7 @@ func (node Dir) Leaves() []File {
 			file := NewFile(rel)
 			file.Root = node.Root
 			file.rel = rel
+			file.Depth = node.Depth
 			files = append(files, file)
 		}
 	}
