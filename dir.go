@@ -75,7 +75,7 @@ func (node Dir) Children() []Tree {
 
 func (node Dir) Parents() []Tree {
 	var parents []Tree
-	if len(node.nodes) > 0 {
+	if len(node.nodes) > 0 && node.Depth > 0 {
 		nodes := node.nodes[:node.Depth-1]
 		for _, parent := range nodes {
 			parents = append(parents, parent)

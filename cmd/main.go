@@ -81,6 +81,7 @@ func file(input string) {
 func tree(input string) {
 	f := fidi.NewTree(input)
 	fmt.Printf("tree path %+V\n", f.Info().Rel())
+	fmt.Printf("parents %+V\n", f.HasParents())
 	//printFileInfo(f.Info())
 	for _, node := range f.Children() {
 		d := node.(fidi.Dir)
