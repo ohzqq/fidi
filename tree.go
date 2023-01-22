@@ -27,7 +27,7 @@ type Tree interface {
 	Children() []Tree
 	Leaves() []File
 	Branches() []Tree
-	Filter(filter Filter) []File
+	Filter(filter ...Filter) []File
 	Info() File
 	fs.FS
 }

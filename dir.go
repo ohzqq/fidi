@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -119,17 +120,29 @@ func (tree Dir) HasChildren() bool {
 	return len(tree.Children()) > 0
 }
 
-func (node Dir) Filter(filter Filter) []File {
-	return FilterFiles(node.Leaves(), filter)
+func (node Dir) Filter(filters ...Filter) []File {
+	return FilterFiles(node.Leaves(), filters...)
 }
 
-func FilterFiles(files []File, filter Filter) []File {
-	var keep []File
-	for _, fn := range files {
-		if filter(fn) {
-			keep = append(keep, fn)
+func FilterFiles(files []File, filters ...Filter) []File {
+	re := make(map[string]File)
+	for _, filter := range filters {
+		for _, fn := range files {
+			if filter(fn) {
+				re[fn.Name] = fn
+			}
 		}
 	}
+
+	var keep []File
+	for _, file := range re {
+		keep = append(keep, file)
+	}
+
+	sort.Slice(keep, func(i, j int) bool {
+		return keep[i].Name < keep[j].Name
+	})
+
 	return keep
 }
 

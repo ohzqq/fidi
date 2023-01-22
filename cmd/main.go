@@ -89,15 +89,16 @@ func tree(input string) {
 		fmt.Printf("parents %+V\n", node.HasParents())
 		//printFileInfo(node.Info())
 
-		//for _, file := range node.Filter(fidi.MimeFilter("image")) {
-		//for _, file := range node.Parents() {
-		//  d := file.(fidi.Dir)
-		//  fmt.Printf("%d: parent path %+V\n", d.Depth, file.Info().Rel())
-		//  //printFileInfo(file.Info())
-		//}
+		for _, file := range fidi.FilterFiles(node.Leaves(), fidi.MimeFilter("image", "video"), fidi.ExtFilter(".html", ".mp4")) {
+			fmt.Printf("%d: leaf path %+V\n", file.Depth, file.Rel())
+			//for _, file := range node.Parents() {
+			//  d := file.(fidi.Dir)
+			//  fmt.Printf("%d: parent path %+V\n", d.Depth, file.Info().Rel())
+			//  //printFileInfo(file.Info())
+		}
 		//for _, file := range node.Leaves() {
-		//  fmt.Printf("%d: leaf path %+V\n", file.Depth, file.Rel())
-		//  //printFileInfo(file)
+		//fmt.Printf("%d: leaf path %+V\n", file.Depth, file.Rel())
+		//printFileInfo(file)
 		//}
 		//for _, file := range node.Children() {
 		//  fmt.Printf("child path %+V\n", file.Info().Rel())
