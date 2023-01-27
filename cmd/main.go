@@ -14,11 +14,29 @@ func main() {
 	//cmd.Execute()
 	input := os.Args[1]
 	println(input)
-	tree(input)
+
+	//bp := afero.NewBasePathFs(afero.NewOsFs(), input)
+	//bpFs := &afero.Afero{Fs: bp}
+	//files, err := bpFs.Fs.(*afero.BasePathFs).RealPath("Nested 1")
+	//if err != nil {
+	//log.Fatal(err)
+	//}
+	//fmt.Printf("%+V\n", files)
+	//tree(input)
 	//dir(input)
 	//file(input)
-	//f := fidi.NewTree(input)
-	//m, err := fs.ReadFile(f, "Nested 1/meta.toml")
+
+	f := fidi.NewTree(input)
+	m, err := f.Open("index.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer m.Close()
+	info, err := m.Stat()
+	if err != nil {
+		log.Fatal(err)
+	}
+	println(info.Name())
 
 	//printFileInfo(f.Info())
 
@@ -81,7 +99,7 @@ func file(input string) {
 func tree(input string) {
 	f := fidi.NewTree(input)
 	fmt.Printf("tree path %+V\n", f.Info().Rel())
-	fmt.Printf("parents %+V\n", f.HasParents())
+	fmt.Printf("parents %+V\n", f.HasChildren())
 	//printFileInfo(f.Info())
 	for _, node := range f.Children() {
 		d := node.(fidi.Dir)

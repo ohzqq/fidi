@@ -32,7 +32,8 @@ func NewDir(path string, root ...string) (Dir, error) {
 		dir.Root = root[0]
 	}
 
-	entries, err := os.ReadDir(dir.Path())
+	//entries, err := os.ReadDir(dir.Path())
+	entries, err := dir.ReadDir(".")
 	if err != nil {
 		return dir, err
 	}
