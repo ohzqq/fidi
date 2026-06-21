@@ -20,11 +20,11 @@ func TestTree(t *testing.T) {
 	for _, c := range tree.Children {
 		//t.Errorf("child %#v, reverse %#v\n", c.Name, c.Reverse)
 		if c.IsDir {
-			t.Errorf("child %#v, leaves %#v\n", c.Name, len(c.Parents))
+			t.Errorf("child %#v, leaves %#v\n", c.Name, len(c.Children))
 		}
 		for _, ch := range c.Children {
 			if ch.IsDir {
-				t.Errorf("child %#v, parents %#v, \n", ch.Name, len(ch.Parents))
+				t.Errorf("child %#v, parents %#v, \n", ch.Name, len(ch.Children))
 			}
 		}
 	}

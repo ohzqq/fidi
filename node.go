@@ -11,24 +11,11 @@ import (
 var osFs = afero.Afero{Fs: afero.NewOsFs()}
 
 type Node struct {
-	Depth        int
-	Path         string
-	Root         string
-	Name         string
-	RelativePath string
-	IsDir        bool
-	Children     []Node
-}
-
-func New(fs fs.ReadDirFS, rootDir string) (Node, error) {
-	node := NewNode(rootDir, 0)
-	node.RelativePath = "/"
-	node.IsDir = true
-	err := walkDirFs(fs, rootDir, node.RelativePath, &node)
-	if err != nil {
-		return node, err
-	}
-	return node, err
+	Depth    int
+	Name     string
+	RelPath  string
+	IsDir    bool
+	Children []Node
 }
 
 func NewNode(name string, depth int) Node {
@@ -68,12 +55,12 @@ func walkDirFs(fs fs.ReadDirFS, baseDir string, relativeDir string, parent *Node
 		parent.Children[i] = NewNode(f.Name(), parent.Depth+1)
 		if !f.IsDir() {
 			parent.Children[i].IsDir = false
-			parent.Children[i].RelativePath = relativeDir
+			parent.Children[i].RelPath = relativeDir
 			continue
 		}
 		parent.Children[i].IsDir = true
-		parent.Children[i].RelativePath = filepath.Join(relativeDir, parent.Children[i].Name)
-		walkDirFs(fs, filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].RelativePath, &parent.Children[i])
+		parent.Children[i].RelPath = filepath.Join(relativeDir, parent.Children[i].Name)
+		walkDirFs(fs, filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].RelPath, &parent.Children[i])
 	}
 	return nil
 }
