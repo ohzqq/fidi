@@ -1,8 +1,8 @@
 package fidi
 
 import (
+	"fmt"
 	"io/fs"
-	"os"
 	"path/filepath"
 
 	"github.com/spf13/afero"
@@ -19,12 +19,11 @@ type Node struct {
 	RelativePath string
 	IsDir        bool
 	fsys         fs.FS
-	entries      []os.DirEntry
-	children     []Tree
-	parents      []Tree
-	nodes        []Node
-	id           int
-	Reverse      map[string]int
+	//children     []Tree
+	//parents      []Tree
+	nodes   []Node
+	id      int
+	Reverse map[string]int
 }
 
 func New(rootDir string) (Node, error) {
@@ -32,30 +31,10 @@ func New(rootDir string) (Node, error) {
 		Name:         rootDir,
 		RelativePath: "/",
 		IsDir:        true,
+		Depth:        1,
 	}
 	err := walkDirFs(afero.NewIOFS(osFs.Fs), rootDir, result.RelativePath, &result)
 	return result, err
-}
-
-func NewNode(path string, root ...string) (Node, error) {
-	dir := Node{
-		Path: path,
-		fsys: os.DirFS(path),
-	}
-	dir.rel = path
-
-	if len(root) > 0 {
-		dir.Root = root[0]
-	}
-
-	entries, err := os.ReadDir(dir.Path)
-	//entries, err := dir.ReadDir(".")
-	if err != nil {
-		return dir, err
-	}
-	dir.entries = entries
-
-	return dir, err
 }
 
 func walkDirFs(fs fs.ReadDirFS, baseDir string, relativeDir string, parent *Node) error {
@@ -63,19 +42,32 @@ func walkDirFs(fs fs.ReadDirFS, baseDir string, relativeDir string, parent *Node
 	if err != nil {
 		return err
 	}
-	parent.nodes = make([]Node, len(files))
-	for i, f := range files {
-		parent.nodes[i].Name = f.Name()
-		if f.IsDir() {
-			parent.nodes[i].IsDir = true
-			parent.nodes[i].RelativePath = filepath.Join(relativeDir, parent.nodes[i].Name)
-			walkDir(filepath.Join(baseDir, parent.nodes[i].Name), parent.nodes[i].RelativePath, &parent.nodes[i])
-		} else {
-			parent.nodes[i].IsDir = false
-			parent.nodes[i].RelativePath = relativeDir
+	//parent.nodes = make([]Node, len(files))
+	for _, f := range files {
+		child := Node{
+			Depth: parent.Depth + 1,
+			Name:  f.Name(),
 		}
+		if f.IsDir() {
+			child.IsDir = true
+			child.RelativePath = filepath.Join(relativeDir, child.Name)
+			walkDirFs(fs, filepath.Join(baseDir, child.Name), child.RelativePath, &child)
+		} else {
+			child.IsDir = false
+			child.RelativePath = relativeDir
+		}
+		parent.Add(child)
 	}
+
 	return nil
+}
+
+func (n *Node) Add(node Node) {
+	n.nodes = append(n.nodes, node)
+	if n.Reverse == nil {
+		n.Reverse = make(map[string]int)
+	}
+	n.Reverse[node.RelativePath] = len(n.nodes) - 1
 }
 
 func (n Node) Leaves() []Node {
@@ -179,3 +171,11 @@ func (n Node) HasChildren() bool {
 //  }
 //  return filter
 //}
+
+type NodeIndexDontExistsError struct {
+	Index int
+}
+
+func (e *NodeIndexDontExistsError) Error() string {
+	return fmt.Sprintf("Node with index [%v] not exists", e.Index)
+}

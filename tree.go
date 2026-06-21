@@ -1,3 +1,5 @@
+//go:build ignore
+
 // Copyright Ivan Sukharev
 
 // The MIT License (MIT)
@@ -11,9 +13,7 @@
 package fidi
 
 import (
-	"fmt"
 	"log"
-	"os"
 )
 
 const StartDepth = 1
@@ -31,7 +31,7 @@ type Tree interface {
 }
 
 func NewTree(path string) Tree {
-	dir, err := NewNode(path)
+	dir, err := newNode(path)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -53,53 +53,10 @@ func NewTree(path string) Tree {
 	return dir
 }
 
-func (n *Node) Add(node Node) {
-	n.nodes = append(n.nodes, node)
-	if n.Reverse == nil {
-		n.Reverse = make(map[string]int)
-	}
-	n.Reverse[node.rel] = len(n.nodes) - 1
-}
-
-func (list *Node) Scan(path string, depth int, ignoreErr bool) error {
-	path += string(os.PathSeparator)
-
-	node, fillErr := NewNode(path, list.Root)
-	if fillErr != nil && !ignoreErr {
-		return fillErr
-	}
-
-	node.Depth = depth
-
-	list.Add(node)
-
-	depth++
-
-	for _, f := range node.entries {
-		if f.IsDir() {
-			n := path + f.Name()
-			scanErr := list.Scan(n, depth, ignoreErr)
-			if scanErr != nil && !ignoreErr {
-				return scanErr
-			}
-		}
-	}
-
-	return nil
-}
-
 func (n Node) GetNode(index int) (Tree, error) {
 	if len(n.nodes) < index+1 {
 		return &Node{}, &NodeIndexDontExistsError{Index: index}
 	}
 
 	return &n.nodes[index], nil
-}
-
-type NodeIndexDontExistsError struct {
-	Index int
-}
-
-func (e *NodeIndexDontExistsError) Error() string {
-	return fmt.Sprintf("Node with index [%v] not exists", e.Index)
 }
