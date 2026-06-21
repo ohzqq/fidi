@@ -25,10 +25,9 @@ type Tree interface {
 	Parents() []Tree
 	HasChildren() bool
 	Children() []Tree
-	Leaves() []File
+	Leaves() []string
 	Branches() []Tree
-	Filter(filter ...Filter) []File
-	Info() File
+	//Filter(filter ...Filter) []File
 	fs.FS
 }
 
@@ -46,7 +45,7 @@ func NewTree(path string) Tree {
 
 	for i, _ := range dir.nodes {
 		n, _ := dir.GetNode(i)
-		node := n.(*Dir)
+		node := n.(*Node)
 		node.nodes = dir.nodes
 		node.id = i
 		//node.Root = strings.TrimSuffix(path, "/")
@@ -55,17 +54,17 @@ func NewTree(path string) Tree {
 	return dir
 }
 
-func (list *Dir) Add(node Dir) {
-	list.nodes = append(list.nodes, node)
+func (n *Node) Add(node Node) {
+	n.nodes = append(n.nodes, node)
 
-	if list.Reverse == nil {
-		list.Reverse = make(map[string]int)
+	if n.Reverse == nil {
+		n.Reverse = make(map[string]int)
 	}
 
-	list.Reverse[node.rel] = len(list.nodes) - 1
+	n.Reverse[node.rel] = len(n.nodes) - 1
 }
 
-func (list *Dir) Scan(path string, depth int, ignoreErr bool) error {
+func (list *Node) Scan(path string, depth int, ignoreErr bool) error {
 	path += string(os.PathSeparator)
 
 	node, fillErr := NewDir(path, list.Root)
@@ -92,12 +91,12 @@ func (list *Dir) Scan(path string, depth int, ignoreErr bool) error {
 	return nil
 }
 
-func (list Dir) GetNode(index int) (Tree, error) {
-	if len(list.nodes) < index+1 {
-		return &Dir{}, &NodeIndexDontExistsError{Index: index}
+func (n Node) GetNode(index int) (Tree, error) {
+	if len(n.nodes) < index+1 {
+		return &Node{}, &NodeIndexDontExistsError{Index: index}
 	}
 
-	return &list.nodes[index], nil
+	return &n.nodes[index], nil
 }
 
 type NodeIndexDontExistsError struct {

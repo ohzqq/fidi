@@ -4,26 +4,25 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"sort"
-	"strings"
 )
 
-type Filter func(File) bool
-
-type Dir struct {
-	File
+type Node struct {
+	Depth    int
+	Path     string
+	Root     string
+	rel      string
 	fsys     fs.FS
 	entries  []os.DirEntry
 	children []Tree
 	parents  []Tree
-	nodes    []Dir
+	nodes    []Node
 	id       int
 	Reverse  map[string]int
 }
 
-func NewDir(path string, root ...string) (Dir, error) {
-	dir := Dir{
-		File: NewFile(path),
+func NewDir(path string, root ...string) (Node, error) {
+	dir := Node{
+		Path: path,
 		fsys: os.DirFS(path),
 	}
 	dir.rel = path
@@ -42,32 +41,28 @@ func NewDir(path string, root ...string) (Dir, error) {
 	return dir, err
 }
 
-func (node Dir) Info() File {
-	return node.File
+func (n Node) Glob(pattern string) ([]string, error) {
+	return fs.Glob(n.fsys, pattern)
 }
 
-func (node Dir) Glob(pattern string) ([]string, error) {
-	return fs.Glob(node.fsys, pattern)
+func (n Node) ReadFile(name string) ([]byte, error) {
+	return fs.ReadFile(n.fsys, name)
 }
 
-func (node Dir) ReadFile(name string) ([]byte, error) {
-	return fs.ReadFile(node.fsys, name)
+func (n Node) ReadDir(name string) ([]fs.DirEntry, error) {
+	return fs.ReadDir(n.fsys, name)
 }
 
-func (node Dir) ReadDir(name string) ([]fs.DirEntry, error) {
-	return fs.ReadDir(node.fsys, name)
+func (n Node) Open(name string) (fs.File, error) {
+	return n.fsys.Open(name)
 }
 
-func (node Dir) Open(name string) (fs.File, error) {
-	return node.fsys.Open(name)
-}
-
-func (node Dir) Children() []Tree {
+func (n Node) Children() []Tree {
 	var children []Tree
-	if len(node.nodes) > 0 {
-		nodes := node.nodes[node.id+1:]
+	if len(n.nodes) > 0 {
+		nodes := n.nodes[n.id+1:]
 		for _, sub := range nodes {
-			if sub.Depth > node.Depth {
+			if sub.Depth > n.Depth {
 				children = append(children, sub)
 			}
 		}
@@ -75,10 +70,10 @@ func (node Dir) Children() []Tree {
 	return children
 }
 
-func (node Dir) Parents() []Tree {
+func (n Node) Parents() []Tree {
 	var parents []Tree
-	if len(node.nodes) > 0 && node.Depth > 0 {
-		nodes := node.nodes[:node.Depth-1]
+	if len(n.nodes) > 0 && n.Depth > 0 {
+		nodes := n.nodes[:n.Depth-1]
 		for _, parent := range nodes {
 			parents = append(parents, parent)
 		}
@@ -86,11 +81,11 @@ func (node Dir) Parents() []Tree {
 	return parents
 }
 
-func (node Dir) Branches() []Tree {
+func (n Node) Branches() []Tree {
 	var dirs []Tree
-	for _, f := range node.entries {
+	for _, f := range n.entries {
 		if f.IsDir() {
-			rel := filepath.Join(node.rel, f.Name())
+			rel := filepath.Join(n.rel, f.Name())
 			d := NewTree(rel)
 			dirs = append(dirs, d)
 		}
@@ -98,75 +93,71 @@ func (node Dir) Branches() []Tree {
 	return dirs
 }
 
-func (node Dir) Leaves() []File {
-	var files []File
-	for _, e := range node.entries {
+func (n Node) Leaves() []string {
+	var files []string
+	for _, e := range n.entries {
 		if !e.IsDir() {
-			rel := filepath.Join(node.rel, e.Name())
-			file := NewFile(rel)
-			file.Root = node.Root
-			file.rel = rel
-			file.Depth = node.Depth
-			files = append(files, file)
+			rel := filepath.Join(n.rel, e.Name())
+			files = append(files, rel)
 		}
 	}
 	return files
 }
 
-func (tree Dir) HasParents() bool {
-	return len(tree.Parents()) > 0
+func (n Node) HasParents() bool {
+	return len(n.Parents()) > 0
 }
 
-func (tree Dir) HasChildren() bool {
-	return len(tree.Children()) > 0
+func (n Node) HasChildren() bool {
+	return len(n.Children()) > 0
 }
 
-func (node Dir) Filter(filters ...Filter) []File {
-	return FilterFiles(node.Leaves(), filters...)
-}
+//func (n Node) Filter(filters ...Filter) []File {
+//  return FilterFiles(n.Leaves(), filters...)
+//}
 
-func FilterFiles(files []File, filters ...Filter) []File {
-	re := make(map[string]File)
-	for _, filter := range filters {
-		for _, fn := range files {
-			if filter(fn) {
-				re[fn.Name] = fn
-			}
-		}
-	}
+//func FilterFiles(files []File, filters ...Filter) []File {
+//  re := make(map[string]File)
+//  for _, filter := range filters {
+//    for _, fn := range files {
+//      if filter(fn) {
+//        re[fn.Name] = fn
+//      }
+//    }
+//  }
 
-	var keep []File
-	for _, file := range re {
-		keep = append(keep, file)
-	}
+//  var keep []File
+//  for _, file := range re {
+//    keep = append(keep, file)
+//  }
 
-	sort.Slice(keep, func(i, j int) bool {
-		return keep[i].Name < keep[j].Name
-	})
+//  sort.Slice(keep, func(i, j int) bool {
+//    return keep[i].Name < keep[j].Name
+//  })
 
-	return keep
-}
+//  return keep
+//}
 
-func ExtFilter(exts ...string) Filter {
-	filter := func(file File) bool {
-		for _, ex := range exts {
-			if strings.EqualFold(file.Extension, ex) {
-				return true
-			}
-		}
-		return false
-	}
-	return filter
-}
+//func ExtFilter(exts ...string) Filter {
+//  filter := func(file File) bool {
+//    for _, ex := range exts {
+//      if strings.EqualFold(file.Extension, ex) {
+//        return true
+//      }
+//    }
+//    return false
+//  }
+//  return filter
+//}
 
-func MimeFilter(mimes ...string) Filter {
-	filter := func(file File) bool {
-		for _, mt := range mimes {
-			if strings.Contains(file.Mime, mt) {
-				return true
-			}
-		}
-		return false
-	}
-	return filter
-}
+//func MimeFilter(mimes ...string) Filter {
+//  filter := func(file File) bool {
+//    for _, mt := range mimes {
+//      if strings.Contains(file.Mime, mt) {
+//        return true
+//      }
+//    }
+//    return false
+//  }
+//  return filter
+//}
