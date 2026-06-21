@@ -20,7 +20,57 @@ type Node struct {
 	Reverse  map[string]int
 }
 
-func NewDir(path string, root ...string) (Node, error) {
+func New(rootDir string) (Trunk, error) {
+	result := Node{
+		Name:         rootDir,
+		RelativePath: "/",
+		IsDir:        true,
+	}
+	err := walkDir(rootDir, result.RelativePath, &result)
+	return Trunk{result}, err
+}
+
+func walkDirFs(fs fs.ReadDirFS, baseDir string, relativeDirstring, parent *Node) error {
+	files, err := os.ReadDir(baseDir)
+	if err != nil {
+		return err
+	}
+	parent.nodes = make([]Node, len(files))
+	for i, f := range files {
+		parent.nodes[i].Name = f.Name()
+		if f.IsDir() {
+			parent.nodes[i].IsDir = true
+			parent.nodes[i].RelativePath = filepath.Join(relativeDir, parent.nodes[i].Name)
+			walkDir(filepath.Join(baseDir, parent.nodes[i].Name), parent.nodes[i].RelativePath, &parent.nodes[i])
+		} else {
+			parent.nodes[i].IsDir = false
+			parent.nodes[i].RelativePath = relativeDir
+		}
+	}
+	return nil
+}
+
+func walkDir(baseDir string, relativeDir string, parent *Node) error {
+	files, err := os.ReadDir(baseDir)
+	if err != nil {
+		return err
+	}
+	parent.nodes = make([]Node, len(files))
+	for i, f := range files {
+		parent.nodes[i].Name = f.Name()
+		if f.IsDir() {
+			parent.nodes[i].IsDir = true
+			parent.nodes[i].RelativePath = filepath.Join(relativeDir, parent.nodes[i].Name)
+			walkDir(filepath.Join(baseDir, parent.nodes[i].Name), parent.nodes[i].RelativePath, &parent.nodes[i])
+		} else {
+			parent.nodes[i].IsDir = false
+			parent.nodes[i].RelativePath = relativeDir
+		}
+	}
+	return nil
+}
+
+func NewNode(path string, root ...string) (Node, error) {
 	dir := Node{
 		Path: path,
 		fsys: os.DirFS(path),
@@ -31,30 +81,14 @@ func NewDir(path string, root ...string) (Node, error) {
 		dir.Root = root[0]
 	}
 
-	//entries, err := os.ReadDir(dir.Path())
-	entries, err := dir.ReadDir(".")
+	entries, err := os.ReadDir(dir.Path)
+	//entries, err := dir.ReadDir(".")
 	if err != nil {
 		return dir, err
 	}
 	dir.entries = entries
 
 	return dir, err
-}
-
-func (n Node) Glob(pattern string) ([]string, error) {
-	return fs.Glob(n.fsys, pattern)
-}
-
-func (n Node) ReadFile(name string) ([]byte, error) {
-	return fs.ReadFile(n.fsys, name)
-}
-
-func (n Node) ReadDir(name string) ([]fs.DirEntry, error) {
-	return fs.ReadDir(n.fsys, name)
-}
-
-func (n Node) Open(name string) (fs.File, error) {
-	return n.fsys.Open(name)
 }
 
 func (n Node) Children() []Tree {

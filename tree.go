@@ -12,7 +12,6 @@ package fidi
 
 import (
 	"fmt"
-	"io/fs"
 	"log"
 	"os"
 )
@@ -28,11 +27,11 @@ type Tree interface {
 	Leaves() []string
 	Branches() []Tree
 	//Filter(filter ...Filter) []File
-	fs.FS
+	//fs.FS
 }
 
 func NewTree(path string) Tree {
-	dir, err := NewDir(path)
+	dir, err := NewNode(path)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -67,7 +66,7 @@ func (n *Node) Add(node Node) {
 func (list *Node) Scan(path string, depth int, ignoreErr bool) error {
 	path += string(os.PathSeparator)
 
-	node, fillErr := NewDir(path, list.Root)
+	node, fillErr := NewNode(path, list.Root)
 	if fillErr != nil && !ignoreErr {
 		return fillErr
 	}
