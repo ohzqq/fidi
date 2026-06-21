@@ -2,10 +2,10 @@ package fidi
 
 import "testing"
 
-func TestSite(t *testing.T) {
+func TestTree(t *testing.T) {
 	//s := New(`tmp/video`)
 	//s.Build()
-	tree, err := New(`../tmp/video`)
+	tree, err := New(`tmp/video`)
 	if err != nil {
 		t.Fatal(err)
 	}

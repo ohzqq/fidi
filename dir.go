@@ -4,70 +4,37 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+
+	"github.com/spf13/afero"
 )
 
+var osFs = afero.Afero{Fs: afero.NewOsFs()}
+
 type Node struct {
-	Depth    int
-	Path     string
-	Root     string
-	rel      string
-	fsys     fs.FS
-	entries  []os.DirEntry
-	children []Tree
-	parents  []Tree
-	nodes    []Node
-	id       int
-	Reverse  map[string]int
+	Depth        int
+	Path         string
+	Root         string
+	Name         string
+	rel          string
+	RelativePath string
+	IsDir        bool
+	fsys         fs.FS
+	entries      []os.DirEntry
+	children     []Tree
+	parents      []Tree
+	nodes        []Node
+	id           int
+	Reverse      map[string]int
 }
 
-func New(rootDir string) (Trunk, error) {
+func New(rootDir string) (Node, error) {
 	result := Node{
 		Name:         rootDir,
 		RelativePath: "/",
 		IsDir:        true,
 	}
-	err := walkDir(rootDir, result.RelativePath, &result)
-	return Trunk{result}, err
-}
-
-func walkDirFs(fs fs.ReadDirFS, baseDir string, relativeDirstring, parent *Node) error {
-	files, err := os.ReadDir(baseDir)
-	if err != nil {
-		return err
-	}
-	parent.nodes = make([]Node, len(files))
-	for i, f := range files {
-		parent.nodes[i].Name = f.Name()
-		if f.IsDir() {
-			parent.nodes[i].IsDir = true
-			parent.nodes[i].RelativePath = filepath.Join(relativeDir, parent.nodes[i].Name)
-			walkDir(filepath.Join(baseDir, parent.nodes[i].Name), parent.nodes[i].RelativePath, &parent.nodes[i])
-		} else {
-			parent.nodes[i].IsDir = false
-			parent.nodes[i].RelativePath = relativeDir
-		}
-	}
-	return nil
-}
-
-func walkDir(baseDir string, relativeDir string, parent *Node) error {
-	files, err := os.ReadDir(baseDir)
-	if err != nil {
-		return err
-	}
-	parent.nodes = make([]Node, len(files))
-	for i, f := range files {
-		parent.nodes[i].Name = f.Name()
-		if f.IsDir() {
-			parent.nodes[i].IsDir = true
-			parent.nodes[i].RelativePath = filepath.Join(relativeDir, parent.nodes[i].Name)
-			walkDir(filepath.Join(baseDir, parent.nodes[i].Name), parent.nodes[i].RelativePath, &parent.nodes[i])
-		} else {
-			parent.nodes[i].IsDir = false
-			parent.nodes[i].RelativePath = relativeDir
-		}
-	}
-	return nil
+	err := walkDirFs(afero.NewIOFS(osFs.Fs), rootDir, result.RelativePath, &result)
+	return result, err
 }
 
 func NewNode(path string, root ...string) (Node, error) {
@@ -91,8 +58,48 @@ func NewNode(path string, root ...string) (Node, error) {
 	return dir, err
 }
 
-func (n Node) Children() []Tree {
-	var children []Tree
+func walkDirFs(fs fs.ReadDirFS, baseDir string, relativeDir string, parent *Node) error {
+	files, err := fs.ReadDir(baseDir)
+	if err != nil {
+		return err
+	}
+	parent.nodes = make([]Node, len(files))
+	for i, f := range files {
+		parent.nodes[i].Name = f.Name()
+		if f.IsDir() {
+			parent.nodes[i].IsDir = true
+			parent.nodes[i].RelativePath = filepath.Join(relativeDir, parent.nodes[i].Name)
+			walkDir(filepath.Join(baseDir, parent.nodes[i].Name), parent.nodes[i].RelativePath, &parent.nodes[i])
+		} else {
+			parent.nodes[i].IsDir = false
+			parent.nodes[i].RelativePath = relativeDir
+		}
+	}
+	return nil
+}
+
+func (n Node) Leaves() []Node {
+	nodes := []Node{}
+	for _, n := range n.nodes {
+		if !n.IsDir {
+			nodes = append(nodes, n)
+		}
+	}
+	return nodes
+}
+
+func (n Node) Branches() []Node {
+	nodes := []Node{}
+	for _, n := range n.nodes {
+		if n.IsDir {
+			nodes = append(nodes, n)
+		}
+	}
+	return nodes
+}
+
+func (n Node) Children() []Node {
+	var children []Node
 	if len(n.nodes) > 0 {
 		nodes := n.nodes[n.id+1:]
 		for _, sub := range nodes {
@@ -104,8 +111,8 @@ func (n Node) Children() []Tree {
 	return children
 }
 
-func (n Node) Parents() []Tree {
-	var parents []Tree
+func (n Node) Parents() []Node {
+	var parents []Node
 	if len(n.nodes) > 0 && n.Depth > 0 {
 		nodes := n.nodes[:n.Depth-1]
 		for _, parent := range nodes {
@@ -113,29 +120,6 @@ func (n Node) Parents() []Tree {
 		}
 	}
 	return parents
-}
-
-func (n Node) Branches() []Tree {
-	var dirs []Tree
-	for _, f := range n.entries {
-		if f.IsDir() {
-			rel := filepath.Join(n.rel, f.Name())
-			d := NewTree(rel)
-			dirs = append(dirs, d)
-		}
-	}
-	return dirs
-}
-
-func (n Node) Leaves() []string {
-	var files []string
-	for _, e := range n.entries {
-		if !e.IsDir() {
-			rel := filepath.Join(n.rel, e.Name())
-			files = append(files, rel)
-		}
-	}
-	return files
 }
 
 func (n Node) HasParents() bool {

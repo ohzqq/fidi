@@ -55,11 +55,9 @@ func NewTree(path string) Tree {
 
 func (n *Node) Add(node Node) {
 	n.nodes = append(n.nodes, node)
-
 	if n.Reverse == nil {
 		n.Reverse = make(map[string]int)
 	}
-
 	n.Reverse[node.rel] = len(n.nodes) - 1
 }
 
