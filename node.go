@@ -15,64 +15,32 @@ type Node struct {
 	Path         string
 	Root         string
 	Name         string
-	rel          string
 	RelativePath string
 	IsDir        bool
-	fsys         fs.FS
-	//children     []Tree
-	//parents      []Tree
-	nodes   []Node
-	id      int
-	Reverse map[string]int
+	Children     []Node
 }
 
-func New(rootDir string) (Node, error) {
-	result := Node{
-		Name:         rootDir,
-		RelativePath: "/",
-		IsDir:        true,
-		Depth:        1,
-	}
-	err := walkDirFs(afero.NewIOFS(osFs.Fs), rootDir, result.RelativePath, &result)
-	return result, err
-}
-
-func walkDirFs(fs fs.ReadDirFS, baseDir string, relativeDir string, parent *Node) error {
-	files, err := fs.ReadDir(baseDir)
+func New(fs fs.ReadDirFS, rootDir string) (Node, error) {
+	node := NewNode(rootDir, 0)
+	node.RelativePath = "/"
+	node.IsDir = true
+	err := walkDirFs(fs, rootDir, node.RelativePath, &node)
 	if err != nil {
-		return err
+		return node, err
 	}
-	//parent.nodes = make([]Node, len(files))
-	for _, f := range files {
-		child := Node{
-			Depth: parent.Depth + 1,
-			Name:  f.Name(),
-		}
-		if f.IsDir() {
-			child.IsDir = true
-			child.RelativePath = filepath.Join(relativeDir, child.Name)
-			walkDirFs(fs, filepath.Join(baseDir, child.Name), child.RelativePath, &child)
-		} else {
-			child.IsDir = false
-			child.RelativePath = relativeDir
-		}
-		parent.Add(child)
-	}
-
-	return nil
+	return node, err
 }
 
-func (n *Node) Add(node Node) {
-	n.nodes = append(n.nodes, node)
-	if n.Reverse == nil {
-		n.Reverse = make(map[string]int)
+func NewNode(name string, depth int) Node {
+	return Node{
+		Name:  name,
+		Depth: depth,
 	}
-	n.Reverse[node.RelativePath] = len(n.nodes) - 1
 }
 
 func (n Node) Leaves() []Node {
 	nodes := []Node{}
-	for _, n := range n.nodes {
+	for _, n := range n.Children {
 		if !n.IsDir {
 			nodes = append(nodes, n)
 		}
@@ -82,7 +50,7 @@ func (n Node) Leaves() []Node {
 
 func (n Node) Branches() []Node {
 	nodes := []Node{}
-	for _, n := range n.nodes {
+	for _, n := range n.Children {
 		if n.IsDir {
 			nodes = append(nodes, n)
 		}
@@ -90,36 +58,24 @@ func (n Node) Branches() []Node {
 	return nodes
 }
 
-func (n Node) Children() []Node {
-	var children []Node
-	if len(n.nodes) > 0 {
-		nodes := n.nodes[n.id+1:]
-		for _, sub := range nodes {
-			if sub.Depth > n.Depth {
-				children = append(children, sub)
-			}
-		}
+func walkDirFs(fs fs.ReadDirFS, baseDir string, relativeDir string, parent *Node) error {
+	files, err := fs.ReadDir(baseDir)
+	if err != nil {
+		return err
 	}
-	return children
-}
-
-func (n Node) Parents() []Node {
-	var parents []Node
-	if len(n.nodes) > 0 && n.Depth > 0 {
-		nodes := n.nodes[:n.Depth-1]
-		for _, parent := range nodes {
-			parents = append(parents, parent)
+	parent.Children = make([]Node, len(files))
+	for i, f := range files {
+		parent.Children[i] = NewNode(f.Name(), parent.Depth+1)
+		if !f.IsDir() {
+			parent.Children[i].IsDir = false
+			parent.Children[i].RelativePath = relativeDir
+			continue
 		}
+		parent.Children[i].IsDir = true
+		parent.Children[i].RelativePath = filepath.Join(relativeDir, parent.Children[i].Name)
+		walkDirFs(fs, filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].RelativePath, &parent.Children[i])
 	}
-	return parents
-}
-
-func (n Node) HasParents() bool {
-	return len(n.Parents()) > 0
-}
-
-func (n Node) HasChildren() bool {
-	return len(n.Children()) > 0
+	return nil
 }
 
 //func (n Node) Filter(filters ...Filter) []File {
