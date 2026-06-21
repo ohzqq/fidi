@@ -104,7 +104,6 @@ func (f *File) Read() error {
 		return err
 	}
 	f.data = d
-
 	return nil
 }
 
