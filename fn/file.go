@@ -46,7 +46,7 @@ func New(name string) *Name {
 }
 
 func (n *Name) Matches(pat string) bool {
-	m, err := path.Match(pat, n.Path)
+	m, err := path.Match(pat, n.Dir+n.Basename)
 	if err != nil {
 		return false
 	}
