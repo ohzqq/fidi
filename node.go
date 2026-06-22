@@ -68,8 +68,16 @@ func (n Node) GetNodeByPath(path string, dir bool) Node {
 	return branch
 }
 
-func (n Node) Filter(filter func(n Node) bool) ([]Node, error) {
+func (n Node) Filter(filter func(n Node) bool, recurse bool) ([]Node, error) {
 	nodes := []Node{}
+	if !recurse {
+		for _, l := range n.Leaves() {
+			if filter(l) {
+				nodes = append(nodes, l)
+			}
+		}
+		return nodes, nil
+	}
 	fn := func(node Node) error {
 		if filter(node) {
 			nodes = append(nodes, node)
@@ -83,14 +91,14 @@ func (n Node) Filter(filter func(n Node) bool) ([]Node, error) {
 	return nodes, nil
 }
 
-func (n Node) FilterExt(ext string) ([]Node, error) {
+func (n Node) FilterExt(ext string, recurse bool) ([]Node, error) {
 	filter := func(n Node) bool {
 		if n.IsDir {
 			return false
 		}
 		return filepath.Ext(n.Name) == ext
 	}
-	return n.Filter(filter)
+	return n.Filter(filter, recurse)
 }
 
 func (n Node) Leaves() []Node {

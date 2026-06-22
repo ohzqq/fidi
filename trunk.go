@@ -39,16 +39,16 @@ func (t *Trunk) walkDir(baseDir string, relativeDir string, parent *Node) error 
 	parent.Children = make([]Node, len(files))
 	for i, f := range files {
 		parent.Children[i] = NewNode(f.Name(), parent.Depth+1)
+		if parent.Depth > 0 {
+			parent.Children[i].Parents = append(parent.Children[i].Parents, parent.Parents...)
+		}
+		parent.Children[i].Parents = append(parent.Children[i].Parents, parent.RelPath)
 		if !f.IsDir() {
 			parent.Children[i].IsDir = false
 			parent.Children[i].RelPath = relativeDir
 			continue
 		}
 		t.depth++
-		if parent.Depth > 0 {
-			parent.Children[i].Parents = append(parent.Children[i].Parents, parent.Parents...)
-		}
-		parent.Children[i].Parents = append(parent.Children[i].Parents, parent.RelPath)
 		parent.Children[i].IsDir = true
 		parent.Children[i].RelPath = filepath.Join(relativeDir, parent.Children[i].Name)
 		t.walkDir(filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].RelPath, &parent.Children[i])

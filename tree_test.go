@@ -23,7 +23,7 @@ func TestTree(t *testing.T) {
 	}
 	tree.Walk(fn)
 	//path := `depth2/scene002-clip001.mp4`
-	b, err := tree.FilterExt(".html")
+	b, err := tree.FilterExt(".html", true)
 	if err != nil {
 		t.Errorf("%#v, depth %#v\n", b, len(b))
 	}
