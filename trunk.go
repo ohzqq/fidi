@@ -7,6 +7,8 @@ import (
 	"github.com/spf13/afero"
 )
 
+var osFs = afero.Afero{Fs: afero.NewOsFs()}
+
 type Trunk struct {
 	Node
 	MaxDepth int

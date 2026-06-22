@@ -4,11 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-
-	"github.com/spf13/afero"
 )
-
-var osFs = afero.Afero{Fs: afero.NewOsFs()}
 
 type Node struct {
 	Depth    int
@@ -40,6 +36,26 @@ func (n Node) relPath() string {
 	}
 	dots = append(dots, n.Name)
 	return filepath.Join(dots...)
+}
+
+func (n Node) Leaves() []Node {
+	nodes := []Node{}
+	for _, n := range n.Children {
+		if !n.IsDir {
+			nodes = append(nodes, n)
+		}
+	}
+	return nodes
+}
+
+func (n Node) Branches() []Node {
+	nodes := []Node{}
+	for _, n := range n.Children {
+		if n.IsDir {
+			nodes = append(nodes, n)
+		}
+	}
+	return nodes
 }
 
 func (n Node) WalkNode(fn func(node Node) error) error {
@@ -113,48 +129,8 @@ func (n Node) FilterExt(ext string, recurse bool) ([]Node, error) {
 	return n.Filter(filter, recurse)
 }
 
-func (n Node) Leaves() []Node {
-	nodes := []Node{}
-	for _, n := range n.Children {
-		if !n.IsDir {
-			nodes = append(nodes, n)
-		}
-	}
-	return nodes
-}
-
-func (n Node) Branches() []Node {
-	nodes := []Node{}
-	for _, n := range n.Children {
-		if n.IsDir {
-			nodes = append(nodes, n)
-		}
-	}
-	return nodes
-}
-
 func (n Node) GetBranchByPath(path string) (Node, error) {
 	return n.GetNodeByPath(path, true)
-}
-
-func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *Node) error {
-	files, err := fs.ReadDir(baseDir)
-	if err != nil {
-		return err
-	}
-	parent.Children = make([]Node, len(files))
-	for i, f := range files {
-		parent.Children[i] = NewNode(f.Name(), parent.Depth+1)
-		if !f.IsDir() {
-			parent.Children[i].IsDir = false
-			parent.Children[i].Dir = relativeDir
-			continue
-		}
-		parent.Children[i].IsDir = true
-		parent.Children[i].Dir = filepath.Join(relativeDir, parent.Children[i].Name)
-		walkDirFs(fs, filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].Dir, &parent.Children[i])
-	}
-	return nil
 }
 
 //func (n Node) Filter(filters ...Filter) []File {
