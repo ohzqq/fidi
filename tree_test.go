@@ -32,5 +32,5 @@ func TestTree(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	t.Errorf("%#v\n", n.RelPath())
+	t.Errorf("%#v\n", n.relPath())
 }

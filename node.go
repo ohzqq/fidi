@@ -13,8 +13,10 @@ var osFs = afero.Afero{Fs: afero.NewOsFs()}
 type Node struct {
 	Depth    int
 	Name     string
-	Base     string
-	isDir    bool
+	Dir      string
+	Path     string
+	RelPath  string
+	IsDir    bool
 	Parents  []string
 	Children []Node
 }
@@ -26,13 +28,12 @@ func NewNode(name string, depth int) Node {
 	}
 }
 
-func (n Node) Path() string {
-	return filepath.Join(n.Base, n.Name)
+func (n Node) path() string {
+	return filepath.Join(n.Dir, n.Name)
 }
 
-func (n Node) RelPath() string {
-	parts := strings.Split(strings.TrimPrefix(n.Base, "/"), "/")
-	fmt.Printf("%#v\n", parts)
+func (n Node) relPath() string {
+	parts := strings.Split(strings.TrimPrefix(n.Dir, "/"), "/")
 	dots := make([]string, len(parts))
 	for i := range parts {
 		dots[i] = ".."
@@ -62,10 +63,10 @@ func (n Node) GetNodeByPath(path string, dir bool) (Node, error) {
 	}
 	fn := func(node Node) error {
 		for _, c := range node.Children {
-			if dir && !c.isDir {
+			if dir && !c.IsDir {
 				continue
 			}
-			if c.Path() == path {
+			if c.Path == path {
 				branch = c
 				return nil
 			}
@@ -104,7 +105,7 @@ func (n Node) Filter(filter func(n Node) bool, recurse bool) ([]Node, error) {
 
 func (n Node) FilterExt(ext string, recurse bool) ([]Node, error) {
 	filter := func(n Node) bool {
-		if n.isDir {
+		if n.IsDir {
 			return false
 		}
 		return filepath.Ext(n.Name) == ext
@@ -115,7 +116,7 @@ func (n Node) FilterExt(ext string, recurse bool) ([]Node, error) {
 func (n Node) Leaves() []Node {
 	nodes := []Node{}
 	for _, n := range n.Children {
-		if !n.isDir {
+		if !n.IsDir {
 			nodes = append(nodes, n)
 		}
 	}
@@ -125,7 +126,7 @@ func (n Node) Leaves() []Node {
 func (n Node) Branches() []Node {
 	nodes := []Node{}
 	for _, n := range n.Children {
-		if n.isDir {
+		if n.IsDir {
 			nodes = append(nodes, n)
 		}
 	}
@@ -145,13 +146,13 @@ func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *Node)
 	for i, f := range files {
 		parent.Children[i] = NewNode(f.Name(), parent.Depth+1)
 		if !f.IsDir() {
-			parent.Children[i].isDir = false
-			parent.Children[i].Base = relativeDir
+			parent.Children[i].IsDir = false
+			parent.Children[i].Dir = relativeDir
 			continue
 		}
-		parent.Children[i].isDir = true
-		parent.Children[i].Base = filepath.Join(relativeDir, parent.Children[i].Name)
-		walkDirFs(fs, filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].Base, &parent.Children[i])
+		parent.Children[i].IsDir = true
+		parent.Children[i].Dir = filepath.Join(relativeDir, parent.Children[i].Name)
+		walkDirFs(fs, filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].Dir, &parent.Children[i])
 	}
 	return nil
 }

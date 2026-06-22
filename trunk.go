@@ -8,9 +8,9 @@ import (
 )
 
 type Trunk struct {
-	afero.Afero
 	Node
 	MaxDepth int
+	fs       afero.Afero
 }
 
 func New(rootDir string) (Trunk, error) {
@@ -21,11 +21,11 @@ func NewFS(fs afero.Fs, rootDir string) (Trunk, error) {
 	trunk := Trunk{
 		Node:     NewNode(rootDir, 0),
 		MaxDepth: 0,
-		Afero:    afero.Afero{Fs: fs},
+		fs:       afero.Afero{Fs: fs},
 	}
-	trunk.Base = rootDir
-	trunk.isDir = true
-	err := trunk.walkDir(rootDir, trunk.Base, &trunk.Node)
+	trunk.Dir = rootDir
+	trunk.IsDir = true
+	err := trunk.walkDir(rootDir, trunk.Dir, &trunk.Node)
 	if err != nil {
 		return trunk, err
 	}
@@ -51,7 +51,7 @@ func (t Trunk) GetNodesAtDepth(d int) ([]Node, error) {
 }
 
 func (t *Trunk) walkDir(baseDir string, relativeDir string, parent *Node) error {
-	files, err := t.Afero.ReadDir(baseDir)
+	files, err := t.fs.ReadDir(baseDir)
 	if err != nil {
 		return err
 	}
@@ -61,16 +61,18 @@ func (t *Trunk) walkDir(baseDir string, relativeDir string, parent *Node) error 
 		if parent.Depth > 0 {
 			parent.Children[i].Parents = append(parent.Children[i].Parents, parent.Parents...)
 		}
-		parent.Children[i].Parents = append(parent.Children[i].Parents, parent.Base)
+		parent.Children[i].Parents = append(parent.Children[i].Parents, parent.Dir)
 		if !f.IsDir() {
-			parent.Children[i].isDir = false
-			parent.Children[i].Base = relativeDir
-			continue
+			parent.Children[i].IsDir = false
+			parent.Children[i].Dir = relativeDir
+		} else {
+			t.MaxDepth++
+			parent.Children[i].IsDir = true
+			parent.Children[i].Dir = filepath.Join(relativeDir, parent.Children[i].Name)
+			t.walkDir(filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].Dir, &parent.Children[i])
 		}
-		t.MaxDepth++
-		parent.Children[i].isDir = true
-		parent.Children[i].Base = filepath.Join(relativeDir, parent.Children[i].Name)
-		t.walkDir(filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].Base, &parent.Children[i])
+		parent.Children[i].Path = parent.Children[i].path()
+		parent.Children[i].RelPath = parent.Children[i].relPath()
 	}
 	return nil
 }
