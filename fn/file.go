@@ -36,12 +36,12 @@ func New(name string) *Name {
 	n.Ext = path.Ext(name)
 	n.Mimetype = mime.TypeByExtension(n.Ext)
 	n.Name = strings.TrimSuffix(name, n.Ext)
-	n.PascalCase = casing.Camel(name)
+	n.PascalCase = casing.Camel(n.Name)
 	if n.PascalCase != "" {
-		n.CamelCase = casing.LowerCamel(name)
+		n.CamelCase = casing.LowerCamel(n.Name)
 	}
-	n.KebabCase = casing.Kebab(name)
-	n.SnakeCase = casing.Snake(name)
+	n.KebabCase = casing.Kebab(n.Name)
+	n.SnakeCase = casing.Snake(n.Name)
 	return n
 }
 
