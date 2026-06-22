@@ -1,0 +1,54 @@
+package fn
+
+import (
+	"mime"
+	"path"
+	"strings"
+
+	"github.com/danielgtaylor/casing"
+)
+
+type Name struct {
+	Name       string `yaml:"name,omitempty"`
+	Basename   string `yaml:"basename,omitempty"`
+	Dir        string `yaml:"dir,omitempty"`
+	Path       string `yaml:"path,omitempty"`
+	Ext        string `yaml:"ext,omitempty"`
+	Mimetype   string `yaml:"mimetype,omitempty"`
+	AbsPath    string `yaml:"absPath,omitempty"`
+	RelPath    string `yaml:"relPath,omitempty"`
+	CamelCase  string `yaml:"camelCase,omitempty"`
+	PascalCase string `yaml:"pascalCase,omitempty"`
+	KebabCase  string `yaml:"kebabCase,omitempty"`
+	SnakeCase  string `yaml:"snakeCase,omitempty"`
+}
+
+func New(name string) *Name {
+	n := &Name{
+		Path: name,
+	}
+	if path.IsAbs(name) {
+		n.AbsPath = name
+	} else {
+		n.RelPath = name
+	}
+	n.Dir, n.Basename = path.Split(name)
+	n.Ext = path.Ext(name)
+	n.Mimetype = mime.TypeByExtension(n.Ext)
+	n.Name = strings.TrimSuffix(name, n.Ext)
+	n.PascalCase = casing.Camel(name)
+	if n.PascalCase != "" {
+		n.CamelCase = casing.LowerCamel(name)
+	}
+	n.KebabCase = casing.Kebab(name)
+	n.SnakeCase = casing.Snake(name)
+	return n
+}
+
+func (n *Name) Matches(pat string) bool {
+	m, err := path.Match(pat, n.Path)
+	if err != nil {
+		return false
+	}
+	return m
+}

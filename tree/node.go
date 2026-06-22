@@ -1,19 +1,15 @@
 package tree
 
 import (
-	"mime"
 	"path/filepath"
 	"strings"
+
+	"github.com/ohzqq/fidi/fn"
 )
 
 type Node struct {
+	*fn.Name    `yaml:",inline"`
 	Depth       int            `yaml:"depth"`
-	Name        string         `yaml:"name,omitempty"`
-	Path        string         `yaml:"path,omitempty"`
-	Ext         string         `yaml:"ext,omitempty"`
-	Mimetype    string         `yaml:"mimetype,omitempty"`
-	AbsPath     string         `yaml:"absPath,omitempty"`
-	RelPath     string         `yaml:"relPath,omitempty"`
 	IsBranch    bool           `yaml:"isBranch,omitempty"`
 	Meta        map[string]any `yaml:"meta,omitempty"`
 	Parents     []Node         `yaml:"parents,omitempty"`
@@ -23,19 +19,18 @@ type Node struct {
 
 func NewNode(name string, depth int) Node {
 	node := Node{
-		Name:  name,
+		Name:  fn.New(name),
 		Depth: depth,
-		Ext:   filepath.Ext(name),
 	}
 	if depth == 0 {
 		node.RelPath = "./"
 	}
-	node.Mimetype = strings.Split(mime.TypeByExtension(node.Ext), ";")[0]
+	node.Mimetype = strings.Split(node.Mimetype, ";")[0]
 	return node
 }
 
 func (n Node) JoinPath() string {
-	return filepath.Join(n.Path, n.Name)
+	return filepath.Join(n.Path, n.Basename)
 }
 
 func (n Node) RelativizePath() string {
@@ -47,7 +42,7 @@ func (n Node) RelativizePath() string {
 	for i := range parts {
 		dots[i] = ".."
 	}
-	dots = append(dots, n.Name)
+	dots = append(dots, n.Basename)
 	return filepath.Join(dots...)
 }
 
@@ -137,7 +132,7 @@ func (n Node) FilterByExt(ext string, recurse bool) ([]Node, error) {
 		if n.IsBranch {
 			return false
 		}
-		return filepath.Ext(n.Name) == ext
+		return n.Ext == ext
 	}
 	return n.Filter(filter, recurse)
 }

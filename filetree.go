@@ -44,7 +44,6 @@ func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *tree.
 		if parent.Depth > 0 {
 			parent.Children[i].Parents = append(parent.Children[i].Parents, parent.Parents...)
 		}
-		//p := tree.NewNode(parent.Name, parent.Depth)
 		p := *parent
 		p.Children = []tree.Node{}
 		p.Parents = []tree.Node{}
@@ -54,10 +53,9 @@ func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *tree.
 			parent.Children[i].Path = relativeDir
 		} else {
 			depth++
-			//t.MaxDepth++
 			parent.Children[i].IsBranch = true
-			parent.Children[i].Path = filepath.Join(relativeDir, parent.Children[i].Name)
-			walkDirFs(fs, filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].Path, &parent.Children[i])
+			parent.Children[i].Path = filepath.Join(relativeDir, parent.Children[i].Basename)
+			walkDirFs(fs, filepath.Join(baseDir, parent.Children[i].Basename), parent.Children[i].Path, &parent.Children[i])
 			parent.Children[i].HasChildren = len(parent.Children[i].Children) > 0
 		}
 		parent.Children[i].AbsPath = parent.Children[i].JoinPath()

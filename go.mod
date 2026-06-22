@@ -3,6 +3,7 @@ module github.com/ohzqq/fidi
 go 1.19
 
 require (
+	github.com/danielgtaylor/casing v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/samber/lo v1.37.0 // indirect
 	github.com/spf13/afero v1.9.3 // indirect
