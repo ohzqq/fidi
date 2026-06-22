@@ -3,6 +3,7 @@ package fidi
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/afero"
 )
@@ -14,8 +15,7 @@ type Node struct {
 	Name     string
 	RelPath  string
 	IsDir    bool
-	parent   string
-	parents  []string
+	Parents  []string
 	Children []Node
 }
 
@@ -24,6 +24,10 @@ func NewNode(name string, depth int) Node {
 		Name:  name,
 		Depth: depth,
 	}
+}
+
+func (n Node) Path() string {
+	return filepath.Join(n.RelPath, n.Name)
 }
 
 func (n Node) Walk(fn func(node Node) error) error {
@@ -38,6 +42,55 @@ func (n Node) Walk(fn func(node Node) error) error {
 		}
 	}
 	return nil
+}
+
+func (n Node) GetNodeByPath(path string, dir bool) Node {
+	branch := n
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	fn := func(node Node) error {
+		for _, c := range node.Children {
+			if dir && !c.IsDir {
+				continue
+			}
+			if c.Path() == path {
+				branch = c
+				return nil
+			}
+		}
+		return nil
+	}
+	err := n.Walk(fn)
+	if err != nil {
+		return n
+	}
+	return branch
+}
+
+func (n Node) Filter(filter func(n Node) bool) ([]Node, error) {
+	nodes := []Node{}
+	fn := func(node Node) error {
+		if filter(node) {
+			nodes = append(nodes, node)
+		}
+		return nil
+	}
+	err := n.Walk(fn)
+	if err != nil {
+		return nil, err
+	}
+	return nodes, nil
+}
+
+func (n Node) FilterExt(ext string) ([]Node, error) {
+	filter := func(n Node) bool {
+		if n.IsDir {
+			return false
+		}
+		return filepath.Ext(n.Name) == ext
+	}
+	return n.Filter(filter)
 }
 
 func (n Node) Leaves() []Node {
@@ -58,6 +111,10 @@ func (n Node) Branches() []Node {
 		}
 	}
 	return nodes
+}
+
+func (n Node) GetBranchByPath(path string) Node {
+	return n.GetNodeByPath(path, true)
 }
 
 func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *Node) error {

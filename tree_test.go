@@ -7,7 +7,7 @@ import (
 func TestTree(t *testing.T) {
 	//s := New(`tmp/video`)
 	//s.Build()
-	tree, err := NewFS(osFs.Fs, `tmp/video`)
+	tree, err := New(`tmp/video`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -16,13 +16,18 @@ func TestTree(t *testing.T) {
 		t.Errorf("got %d, wanted %d\n", g, 3)
 	}
 	fn := func(node Node) error {
-		if node.IsDir {
-			t.Errorf("child %#v, parents %#v\n", node.Name, node.parents)
-		}
+		//if node.IsDir {
+		t.Errorf("name %#v, parents %#v, depth %d\n", node.Path(), node.Parents, node.Depth)
+		//}
 		return nil
 	}
 	tree.Walk(fn)
-	t.Errorf("%#v, depth %#v\n", tree.nodes, len(tree.Children))
+	//path := `depth2/scene002-clip001.mp4`
+	b, err := tree.FilterExt(".html")
+	if err != nil {
+		t.Errorf("%#v, depth %#v\n", b, len(b))
+	}
+	t.Errorf("%#v, depth %#v\n", b, len(b))
 	//for _, c := range tree.Children {
 	//  //t.Errorf("child %#v, reverse %#v\n", c.Name, c.Reverse)
 	//  if c.IsDir {
