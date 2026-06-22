@@ -1,4 +1,4 @@
-package fidi
+package tree
 
 import (
 	"fmt"
@@ -8,16 +8,17 @@ import (
 )
 
 type Node struct {
-	Depth    int      `yaml:"depth,omitempty"`
-	Name     string   `yaml:"name,omitempty"`
-	Path     string   `yaml:"path,omitempty"`
-	Ext      string   `yaml:"ext,omitempty"`
-	Mimetype string   `yaml:"mimetype,omitempty"`
-	AbsPath  string   `yaml:"absPath,omitempty"`
-	RelPath  string   `yaml:"relPath,omitempty"`
-	IsBranch bool     `yaml:"isBranch,omitempty"`
-	Parents  []string `yaml:"parents,omitempty"`
-	Children []Node   `yaml:"children,omitempty"`
+	Depth    int            `yaml:"depth,omitempty"`
+	Name     string         `yaml:"name,omitempty"`
+	Path     string         `yaml:"path,omitempty"`
+	Ext      string         `yaml:"ext,omitempty"`
+	Mimetype string         `yaml:"mimetype,omitempty"`
+	AbsPath  string         `yaml:"absPath,omitempty"`
+	RelPath  string         `yaml:"relPath,omitempty"`
+	IsBranch bool           `yaml:"isBranch,omitempty"`
+	Meta     map[string]any `yaml:"meta,omitempty"`
+	Parents  []string       `yaml:"parents,omitempty"`
+	Children []Node         `yaml:"children,omitempty"`
 }
 
 func NewNode(name string, depth int) Node {
@@ -30,11 +31,11 @@ func NewNode(name string, depth int) Node {
 	return node
 }
 
-func (n Node) path() string {
+func (n Node) JoinPath() string {
 	return filepath.Join(n.Path, n.Name)
 }
 
-func (n Node) relPath() string {
+func (n Node) RelativizePath() string {
 	parts := strings.Split(strings.TrimPrefix(n.Path, "/"), "/")
 	dots := make([]string, len(parts))
 	for i := range parts {
@@ -64,13 +65,13 @@ func (n Node) Branches() []Node {
 	return nodes
 }
 
-func (n Node) WalkNode(fn func(node Node) error) error {
+func (n Node) Walk(fn WalkNodeFunc) error {
 	err := fn(n)
 	if err != nil {
 		return err
 	}
 	for _, c := range n.Children {
-		err := c.WalkNode(fn)
+		err := c.Walk(fn)
 		if err != nil {
 			return err
 		}
@@ -95,14 +96,14 @@ func (n Node) GetNodeByPath(path string, dir bool) (Node, error) {
 		}
 		return nil
 	}
-	err := n.WalkNode(fn)
+	err := n.Walk(fn)
 	if err != nil {
 		return n, err
 	}
 	return branch, nil
 }
 
-func (n Node) Filter(filter func(n Node) bool, recurse bool) ([]Node, error) {
+func (n Node) Filter(filter NodeFilterFunc, recurse bool) ([]Node, error) {
 	nodes := []Node{}
 	if !recurse {
 		for _, l := range n.Leaves() {
@@ -118,7 +119,7 @@ func (n Node) Filter(filter func(n Node) bool, recurse bool) ([]Node, error) {
 		}
 		return nil
 	}
-	err := n.WalkNode(fn)
+	err := n.Walk(fn)
 	if err != nil {
 		return nil, err
 	}
@@ -139,55 +140,9 @@ func (n Node) GetBranchByPath(path string) (Node, error) {
 	return n.GetNodeByPath(path, true)
 }
 
-//func (n Node) Filter(filters ...Filter) []File {
-//  return FilterFiles(n.Leaves(), filters...)
-//}
+type WalkNodeFunc func(node Node) error
 
-//func FilterFiles(files []File, filters ...Filter) []File {
-//  re := make(map[string]File)
-//  for _, filter := range filters {
-//    for _, fn := range files {
-//      if filter(fn) {
-//        re[fn.Name] = fn
-//      }
-//    }
-//  }
-
-//  var keep []File
-//  for _, file := range re {
-//    keep = append(keep, file)
-//  }
-
-//  sort.Slice(keep, func(i, j int) bool {
-//    return keep[i].Name < keep[j].Name
-//  })
-
-//  return keep
-//}
-
-//func ExtFilter(exts ...string) Filter {
-//  filter := func(file File) bool {
-//    for _, ex := range exts {
-//      if strings.EqualFold(file.Extension, ex) {
-//        return true
-//      }
-//    }
-//    return false
-//  }
-//  return filter
-//}
-
-//func MimeFilter(mimes ...string) Filter {
-//  filter := func(file File) bool {
-//    for _, mt := range mimes {
-//      if strings.Contains(file.Mime, mt) {
-//        return true
-//      }
-//    }
-//    return false
-//  }
-//  return filter
-//}
+type NodeFilterFunc func(node Node) bool
 
 type NodeIndexDontExistsError struct {
 	Index int

@@ -36,7 +36,7 @@ func TestTree(t *testing.T) {
 		t.Error(err)
 	}
 	if n.RelPath != `../../index.html` {
-		t.Errorf("%#v\n", n.relPath())
+		t.Errorf("%#v\n", n.RelativizePath())
 	}
 }
 
