@@ -2,34 +2,40 @@ package fidi
 
 import (
 	"fmt"
+	"mime"
 	"path/filepath"
 	"strings"
 )
 
 type Node struct {
-	Depth    int
-	Name     string
-	Dir      string
-	Path     string
-	RelPath  string
-	IsDir    bool
-	Parents  []string
-	Children []Node
+	Depth    int      `yaml:"depth,omitempty"`
+	Name     string   `yaml:"name,omitempty"`
+	Path     string   `yaml:"path,omitempty"`
+	Ext      string   `yaml:"ext,omitempty"`
+	Mimetype string   `yaml:"mimetype,omitempty"`
+	AbsPath  string   `yaml:"absPath,omitempty"`
+	RelPath  string   `yaml:"relPath,omitempty"`
+	IsBranch bool     `yaml:"isBranch,omitempty"`
+	Parents  []string `yaml:"parents,omitempty"`
+	Children []Node   `yaml:"children,omitempty"`
 }
 
 func NewNode(name string, depth int) Node {
-	return Node{
+	node := Node{
 		Name:  name,
 		Depth: depth,
+		Ext:   filepath.Ext(name),
 	}
+	node.Mimetype = strings.Split(mime.TypeByExtension(node.Ext), ";")[0]
+	return node
 }
 
 func (n Node) path() string {
-	return filepath.Join(n.Dir, n.Name)
+	return filepath.Join(n.Path, n.Name)
 }
 
 func (n Node) relPath() string {
-	parts := strings.Split(strings.TrimPrefix(n.Dir, "/"), "/")
+	parts := strings.Split(strings.TrimPrefix(n.Path, "/"), "/")
 	dots := make([]string, len(parts))
 	for i := range parts {
 		dots[i] = ".."
@@ -41,7 +47,7 @@ func (n Node) relPath() string {
 func (n Node) Leaves() []Node {
 	nodes := []Node{}
 	for _, n := range n.Children {
-		if !n.IsDir {
+		if !n.IsBranch {
 			nodes = append(nodes, n)
 		}
 	}
@@ -51,7 +57,7 @@ func (n Node) Leaves() []Node {
 func (n Node) Branches() []Node {
 	nodes := []Node{}
 	for _, n := range n.Children {
-		if n.IsDir {
+		if n.IsBranch {
 			nodes = append(nodes, n)
 		}
 	}
@@ -79,10 +85,10 @@ func (n Node) GetNodeByPath(path string, dir bool) (Node, error) {
 	}
 	fn := func(node Node) error {
 		for _, c := range node.Children {
-			if dir && !c.IsDir {
+			if dir && !c.IsBranch {
 				continue
 			}
-			if c.Path == path {
+			if c.AbsPath == path {
 				branch = c
 				return nil
 			}
@@ -121,7 +127,7 @@ func (n Node) Filter(filter func(n Node) bool, recurse bool) ([]Node, error) {
 
 func (n Node) FilterExt(ext string, recurse bool) ([]Node, error) {
 	filter := func(n Node) bool {
-		if n.IsDir {
+		if n.IsBranch {
 			return false
 		}
 		return filepath.Ext(n.Name) == ext
