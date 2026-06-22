@@ -1,4 +1,4 @@
-package fidi
+package tree
 
 import (
 	"os"
