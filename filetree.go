@@ -12,6 +12,7 @@ var osFs = afero.Afero{Fs: afero.NewOsFs()}
 
 type Filetree struct {
 	tree.Trunk
+	Fs afero.Afero
 }
 
 func NewFS(fs afero.Fs, rootDir string) (Filetree, error) {
@@ -24,6 +25,7 @@ func NewFS(fs afero.Fs, rootDir string) (Filetree, error) {
 	}
 	return Filetree{
 		Trunk: tree.New(node, m),
+		Fs:    afero.Afero{fs},
 	}, nil
 }
 

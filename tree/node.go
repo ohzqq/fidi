@@ -1,7 +1,6 @@
 package tree
 
 import (
-	"fmt"
 	"mime"
 	"path/filepath"
 	"strings"
@@ -143,11 +142,3 @@ func (n Node) GetBranchByPath(path string) (Node, error) {
 type WalkNodeFunc func(node Node) error
 
 type NodeFilterFunc func(node Node) bool
-
-type NodeIndexDontExistsError struct {
-	Index int
-}
-
-func (e *NodeIndexDontExistsError) Error() string {
-	return fmt.Sprintf("Node with index [%v] not exists", e.Index)
-}
