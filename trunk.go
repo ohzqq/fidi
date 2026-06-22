@@ -14,21 +14,11 @@ type Trunk struct {
 	MaxDepth int
 }
 
-type Filetree struct {
-	Trunk
-	fs afero.Afero
-}
-
 func NewFS(fs afero.Fs, rootDir string) (Trunk, error) {
 	tree := Trunk{
 		Node:     NewNode(rootDir, 0),
 		MaxDepth: 0,
 	}
-	//tree := Filetree{
-	//  Trunk: trunk,
-	//  fs:    afero.Afero{Fs: fs},
-	//}
-
 	tree.Dir = rootDir
 	tree.IsDir = true
 	m, err := walkDirFs(afero.Afero{fs}, rootDir, tree.Dir, &tree.Node)
