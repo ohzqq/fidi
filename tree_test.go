@@ -17,12 +17,12 @@ func TestTree(t *testing.T) {
 	}
 	fn := func(node Node) error {
 		if node.IsDir {
-			println(node.Name, node.Depth)
+			t.Errorf("child %#v, parents %#v\n", node.Name, node.parents)
 		}
 		return nil
 	}
 	tree.Walk(fn)
-	println(tree.depth)
+	t.Errorf("%#v, depth %#v\n", tree.nodes, len(tree.Children))
 	//for _, c := range tree.Children {
 	//  //t.Errorf("child %#v, reverse %#v\n", c.Name, c.Reverse)
 	//  if c.IsDir {

@@ -14,6 +14,8 @@ type Node struct {
 	Name     string
 	RelPath  string
 	IsDir    bool
+	parent   string
+	parents  []string
 	Children []Node
 }
 
