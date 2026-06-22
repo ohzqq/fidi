@@ -2,7 +2,6 @@ package fidi
 
 import (
 	"fmt"
-	"io/fs"
 	"path/filepath"
 
 	"github.com/spf13/afero"
@@ -25,6 +24,20 @@ func NewNode(name string, depth int) Node {
 	}
 }
 
+func (n Node) Walk(fn func(node Node) error) error {
+	err := fn(n)
+	if err != nil {
+		return err
+	}
+	for _, c := range n.Children {
+		err := c.Walk(fn)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (n Node) Leaves() []Node {
 	nodes := []Node{}
 	for _, n := range n.Children {
@@ -45,7 +58,7 @@ func (n Node) Branches() []Node {
 	return nodes
 }
 
-func walkDirFs(fs fs.ReadDirFS, baseDir string, relativeDir string, parent *Node) error {
+func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *Node) error {
 	files, err := fs.ReadDir(baseDir)
 	if err != nil {
 		return err

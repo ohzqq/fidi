@@ -1,29 +1,38 @@
 package fidi
 
 import (
-	"io/fs"
 	"path/filepath"
+
+	"github.com/spf13/afero"
 )
 
 type Trunk struct {
 	Node
+	depth int
+	fs    afero.Afero
 }
 
-func New(fs fs.ReadDirFS, rootDir string) (Trunk, error) {
-	node := Trunk{
-		Node: NewNode(rootDir, 0),
+func New(rootDir string) (Trunk, error) {
+	return NewFS(afero.NewBasePathFs(osFs, rootDir), rootDir)
+}
+
+func NewFS(fs afero.Fs, rootDir string) (Trunk, error) {
+	trunk := Trunk{
+		Node:  NewNode(rootDir, 0),
+		depth: 0,
+		fs:    afero.Afero{Fs: fs},
 	}
-	node.RelPath = "/"
-	node.IsDir = true
-	err := node.Scan(fs, rootDir, node.RelPath, &node.Node)
+	trunk.RelPath = "/"
+	trunk.IsDir = true
+	err := trunk.walkDir(rootDir, trunk.RelPath, &trunk.Node)
 	if err != nil {
-		return node, err
+		return trunk, err
 	}
-	return node, err
+	return trunk, err
 }
 
-func (t *Trunk) Scan(fs fs.ReadDirFS, baseDir string, relativeDir string, parent *Node) error {
-	files, err := fs.ReadDir(baseDir)
+func (t *Trunk) walkDir(baseDir string, relativeDir string, parent *Node) error {
+	files, err := t.fs.ReadDir(baseDir)
 	if err != nil {
 		return err
 	}
@@ -35,9 +44,10 @@ func (t *Trunk) Scan(fs fs.ReadDirFS, baseDir string, relativeDir string, parent
 			parent.Children[i].RelPath = relativeDir
 			continue
 		}
+		t.depth++
 		parent.Children[i].IsDir = true
 		parent.Children[i].RelPath = filepath.Join(relativeDir, parent.Children[i].Name)
-		walkDirFs(fs, filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].RelPath, &parent.Children[i])
+		t.walkDir(filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].RelPath, &parent.Children[i])
 	}
 	return nil
 }
