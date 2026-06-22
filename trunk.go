@@ -19,22 +19,19 @@ type Filetree struct {
 	fs afero.Afero
 }
 
-func New(rootDir string) (Filetree, error) {
-	return NewFS(afero.NewBasePathFs(osFs, rootDir), "/")
-}
-
-func NewFS(fs afero.Fs, rootDir string) (Filetree, error) {
-	trunk := Trunk{
+func NewFS(fs afero.Fs, rootDir string) (Trunk, error) {
+	tree := Trunk{
 		Node:     NewNode(rootDir, 0),
 		MaxDepth: 0,
 	}
-	tree := Filetree{
-		Trunk: trunk,
-		fs:    afero.Afero{Fs: fs},
-	}
+	//tree := Filetree{
+	//  Trunk: trunk,
+	//  fs:    afero.Afero{Fs: fs},
+	//}
+
 	tree.Dir = rootDir
 	tree.IsDir = true
-	m, err := walkDirFs(tree.fs, rootDir, tree.Dir, &tree.Node)
+	m, err := walkDirFs(afero.Afero{fs}, rootDir, tree.Dir, &tree.Node)
 	if err != nil {
 		return tree, err
 	}
@@ -42,7 +39,11 @@ func NewFS(fs afero.Fs, rootDir string) (Filetree, error) {
 	return tree, err
 }
 
-func (t Filetree) GetNodesAtDepth(d int) ([]Node, error) {
+func NewFromBasePath(rootDir string) (Trunk, error) {
+	return NewFS(afero.NewBasePathFs(osFs, rootDir), "/")
+}
+
+func (t Trunk) GetNodesAtDepth(d int) ([]Node, error) {
 	if d > t.MaxDepth {
 		return nil, fmt.Errorf("%d is greater than max depth", t.MaxDepth)
 	}

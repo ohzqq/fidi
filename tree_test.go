@@ -7,7 +7,7 @@ import (
 func TestTree(t *testing.T) {
 	//s := New(`tmp/video`)
 	//s.Build()
-	tree, err := New(`tmp/video`)
+	tree, err := NewFromBasePath(`tmp/video`)
 	if err != nil {
 		t.Fatal(err)
 	}
