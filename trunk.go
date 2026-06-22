@@ -27,10 +27,11 @@ func NewFS(fs afero.Fs, rootDir string) (Trunk, error) {
 	}
 	trunk.Dir = rootDir
 	trunk.IsDir = true
-	err := trunk.walkDir(rootDir, trunk.Dir, &trunk.Node)
+	m, err := walkDirFs(trunk.fs, rootDir, trunk.Dir, &trunk.Node)
 	if err != nil {
 		return trunk, err
 	}
+	trunk.MaxDepth = m
 	return trunk, err
 }
 
@@ -52,11 +53,40 @@ func (t Trunk) GetNodesAtDepth(d int) ([]Node, error) {
 	return nodes, nil
 }
 
-func (t *Trunk) walkDir(baseDir string, relativeDir string, parent *Node) error {
-	files, err := t.fs.ReadDir(baseDir)
+//func (t *Trunk) walkDir(baseDir string, relativeDir string, parent *Node) error {
+//  //files, err := t.fs.ReadDir(baseDir)
+//  //if err != nil {
+//  //return err
+//  //}
+//  //parent.Children = make([]Node, len(files))
+//  //for i, f := range files {
+//  //  parent.Children[i] = NewNode(f.Name(), parent.Depth+1)
+//  //  if parent.Depth > 0 {
+//  //    parent.Children[i].Parents = append(parent.Children[i].Parents, parent.Parents...)
+//  //  }
+//  //  parent.Children[i].Parents = append(parent.Children[i].Parents, parent.Dir)
+//  //  if !f.IsDir() {
+//  //    parent.Children[i].IsDir = false
+//  //    parent.Children[i].Dir = relativeDir
+//  //  } else {
+//  //    t.MaxDepth++
+//  //    parent.Children[i].IsDir = true
+//  //    parent.Children[i].Dir = filepath.Join(relativeDir, parent.Children[i].Name)
+//  //    t.walkDir(filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].Dir, &parent.Children[i])
+//  //  }
+//  //  parent.Children[i].Path = parent.Children[i].path()
+//  //  parent.Children[i].RelPath = parent.Children[i].relPath()
+//  //}
+
+//  return walkDirFs(t.fs, baseDir, relativeDir, parent)
+//}
+
+func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *Node) (int, error) {
+	files, err := fs.ReadDir(baseDir)
 	if err != nil {
-		return err
+		return 0, err
 	}
+	depth := 0
 	parent.Children = make([]Node, len(files))
 	for i, f := range files {
 		parent.Children[i] = NewNode(f.Name(), parent.Depth+1)
@@ -68,13 +98,14 @@ func (t *Trunk) walkDir(baseDir string, relativeDir string, parent *Node) error 
 			parent.Children[i].IsDir = false
 			parent.Children[i].Dir = relativeDir
 		} else {
-			t.MaxDepth++
+			depth++
+			//t.MaxDepth++
 			parent.Children[i].IsDir = true
 			parent.Children[i].Dir = filepath.Join(relativeDir, parent.Children[i].Name)
-			t.walkDir(filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].Dir, &parent.Children[i])
+			walkDirFs(fs, filepath.Join(baseDir, parent.Children[i].Name), parent.Children[i].Dir, &parent.Children[i])
 		}
 		parent.Children[i].Path = parent.Children[i].path()
 		parent.Children[i].RelPath = parent.Children[i].relPath()
 	}
-	return nil
+	return depth, nil
 }
