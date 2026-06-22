@@ -15,29 +15,16 @@ func TestTree(t *testing.T) {
 	if g := len(tree.Children); g != 3 {
 		t.Errorf("got %d, wanted %d\n", g, 3)
 	}
-	fn := func(node Node) error {
-		//if node.IsDir {
-		t.Errorf("name %#v, parents %#v, depth %d\n", node.Path(), node.Parents, node.Depth)
-		//}
-		return nil
-	}
-	tree.Walk(fn)
 	//path := `depth2/scene002-clip001.mp4`
-	b, err := tree.FilterExt(".html", true)
+	b, err := tree.GetNodesAtDepth(1)
 	if err != nil {
 		t.Errorf("%#v, depth %#v\n", b, len(b))
 	}
-	t.Errorf("%#v, depth %#v\n", b, len(b))
-	//for _, c := range tree.Children {
-	//  //t.Errorf("child %#v, reverse %#v\n", c.Name, c.Reverse)
-	//  if c.IsDir {
-	//    t.Errorf("child %#v, leaves %#v\n", c.Name, len(c.Children))
-	//  }
-	//  for _, ch := range c.Children {
-	//    if ch.IsDir {
-	//      t.Errorf("child %#v, parents %#v, \n", ch.Name, len(ch.Children))
-	//    }
-	//  }
-	//}
-
+	if len(b) != 3 {
+		t.Errorf("%#v, depth %#v\n", b, tree.depth)
+	}
+	b, err = tree.FilterExt(".html", true)
+	if len(b) != 5 {
+		t.Errorf("%#v, depth %#v\n", b, tree.depth)
+	}
 }

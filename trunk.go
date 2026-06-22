@@ -1,6 +1,7 @@
 package fidi
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/spf13/afero"
@@ -29,6 +30,24 @@ func NewFS(fs afero.Fs, rootDir string) (Trunk, error) {
 		return trunk, err
 	}
 	return trunk, err
+}
+
+func (t Trunk) GetNodesAtDepth(d int) ([]Node, error) {
+	if d > t.depth {
+		return nil, fmt.Errorf("%d is greater than max depth", t.depth)
+	}
+	nodes := []Node{}
+	fn := func(node Node) error {
+		if node.Depth == d {
+			nodes = append(nodes, node)
+		}
+		return nil
+	}
+	err := t.Walk(fn)
+	if err != nil {
+		return nil, err
+	}
+	return nodes, nil
 }
 
 func (t *Trunk) walkDir(baseDir string, relativeDir string, parent *Node) error {
