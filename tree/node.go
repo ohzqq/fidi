@@ -9,12 +9,12 @@ import (
 
 type Node struct {
 	*fn.Name    `yaml:",inline"`
-	Depth       int            `yaml:"depth"`
-	IsBranch    bool           `yaml:"isBranch,omitempty"`
-	Meta        map[string]any `yaml:"meta,omitempty"`
-	Parents     []Node         `yaml:"parents,omitempty"`
-	Children    []Node         `yaml:"children,omitempty"`
-	HasChildren bool           `yaml:"hasChildren,omitempty"`
+	Depth       int            `yaml:"depth" json:"depth,omitempty"`
+	IsBranch    bool           `yaml:"isBranch,omitempty" json:"isBranch,omitempty"`
+	Meta        map[string]any `yaml:"meta,omitempty" json:"meta,omitempty"`
+	Parents     []Node         `yaml:"parents,omitempty" json:"parents,omitempty"`
+	Children    []Node         `yaml:"children,omitempty" json:"children,omitempty"`
+	HasChildren bool           `yaml:"hasChildren,omitempty" json:"hasChildren,omitempty"`
 }
 
 func NewNode(name string, depth int) Node {
