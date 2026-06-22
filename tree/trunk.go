@@ -6,7 +6,7 @@ import (
 
 type Trunk struct {
 	Node     `yaml:"root"`
-	MaxDepth int
+	MaxDepth int `yaml:"-"`
 }
 
 func New(node Node, depth int) Trunk {

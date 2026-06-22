@@ -7,17 +7,18 @@ import (
 )
 
 type Node struct {
-	Depth    int            `yaml:"depth,omitempty"`
-	Name     string         `yaml:"name,omitempty"`
-	Path     string         `yaml:"path,omitempty"`
-	Ext      string         `yaml:"ext,omitempty"`
-	Mimetype string         `yaml:"mimetype,omitempty"`
-	AbsPath  string         `yaml:"absPath,omitempty"`
-	RelPath  string         `yaml:"relPath,omitempty"`
-	IsBranch bool           `yaml:"isBranch,omitempty"`
-	Meta     map[string]any `yaml:"meta,omitempty"`
-	Parents  []string       `yaml:"parents,omitempty"`
-	Children []Node         `yaml:"children,omitempty"`
+	Depth       int            `yaml:"depth"`
+	Name        string         `yaml:"name,omitempty"`
+	Path        string         `yaml:"path,omitempty"`
+	Ext         string         `yaml:"ext,omitempty"`
+	Mimetype    string         `yaml:"mimetype,omitempty"`
+	AbsPath     string         `yaml:"absPath,omitempty"`
+	RelPath     string         `yaml:"relPath,omitempty"`
+	IsBranch    bool           `yaml:"isBranch,omitempty"`
+	Meta        map[string]any `yaml:"meta,omitempty"`
+	Parents     []Node         `yaml:"parents,omitempty"`
+	Children    []Node         `yaml:"children,omitempty"`
+	HasChildren bool           `yaml:"hasChildren,omitempty"`
 }
 
 func NewNode(name string, depth int) Node {
@@ -25,6 +26,9 @@ func NewNode(name string, depth int) Node {
 		Name:  name,
 		Depth: depth,
 		Ext:   filepath.Ext(name),
+	}
+	if depth == 0 {
+		node.RelPath = "./"
 	}
 	node.Mimetype = strings.Split(mime.TypeByExtension(node.Ext), ";")[0]
 	return node
@@ -35,6 +39,9 @@ func (n Node) JoinPath() string {
 }
 
 func (n Node) RelativizePath() string {
+	if n.Path == "/" {
+		return "./"
+	}
 	parts := strings.Split(strings.TrimPrefix(n.Path, "/"), "/")
 	dots := make([]string, len(parts))
 	for i := range parts {
@@ -125,7 +132,7 @@ func (n Node) Filter(filter NodeFilterFunc, recurse bool) ([]Node, error) {
 	return nodes, nil
 }
 
-func (n Node) FilterExt(ext string, recurse bool) ([]Node, error) {
+func (n Node) FilterByExt(ext string, recurse bool) ([]Node, error) {
 	filter := func(n Node) bool {
 		if n.IsBranch {
 			return false
@@ -133,10 +140,6 @@ func (n Node) FilterExt(ext string, recurse bool) ([]Node, error) {
 		return filepath.Ext(n.Name) == ext
 	}
 	return n.Filter(filter, recurse)
-}
-
-func (n Node) GetBranchByPath(path string) (Node, error) {
-	return n.GetNodeByPath(path, true)
 }
 
 type WalkNodeFunc func(node Node) error

@@ -25,7 +25,7 @@ func TestTree(t *testing.T) {
 	if len(b) != 3 {
 		t.Errorf("%#v, depth %#v\n", b, tree.MaxDepth)
 	}
-	b, err = tree.FilterExt(".html", true)
+	b, err = tree.FilterByExt(".html", true)
 	if len(b) != 5 {
 		t.Errorf("%#v, depth %#v\n", b, tree.MaxDepth)
 	}
