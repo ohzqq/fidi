@@ -40,7 +40,8 @@ func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *tree.
 	depth := 0
 	parent.Children = make([]tree.Node, len(files))
 	for i, f := range files {
-		parent.Children[i] = tree.NewNode(f.Name(), parent.Depth+1)
+		path := filepath.Join(baseDir, f.Name())
+		parent.Children[i] = tree.NewNode(path, parent.Depth+1)
 		if parent.Depth > 0 {
 			parent.Children[i].Parents = append(parent.Children[i].Parents, parent.Parents...)
 		}
@@ -50,16 +51,14 @@ func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *tree.
 		parent.Children[i].Parents = append(parent.Children[i].Parents, p)
 		if !f.IsDir() {
 			parent.Children[i].IsBranch = false
-			parent.Children[i].Path = relativeDir
+			//parent.Children[i].Path = relativeDir
 		} else {
 			depth++
 			parent.Children[i].IsBranch = true
-			parent.Children[i].Path = filepath.Join(relativeDir, parent.Children[i].Basename)
+			//parent.Children[i].Path = filepath.Join(relativeDir, parent.Children[i].Basename)
 			walkDirFs(fs, filepath.Join(baseDir, parent.Children[i].Basename), parent.Children[i].Path, &parent.Children[i])
 			parent.Children[i].HasChildren = len(parent.Children[i].Children) > 0
 		}
-		parent.Children[i].AbsPath = parent.Children[i].JoinPath()
-		parent.Children[i].RelPath = parent.Children[i].RelativizePath()
 	}
 	return depth, nil
 }

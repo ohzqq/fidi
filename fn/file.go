@@ -3,6 +3,7 @@ package fn
 import (
 	"mime"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/danielgtaylor/casing"
@@ -27,15 +28,14 @@ func New(name string) *Name {
 	n := &Name{
 		Path: name,
 	}
+	n.Ext = path.Ext(name)
+	n.Dir, n.Basename = path.Split(name)
 	if path.IsAbs(name) {
 		n.AbsPath = name
-	} else {
-		n.RelPath = name
 	}
-	n.Dir, n.Basename = path.Split(name)
-	n.Ext = path.Ext(name)
+	n.RelPath = n.RelativizePath()
 	n.Mimetype = mime.TypeByExtension(n.Ext)
-	n.Name = strings.TrimSuffix(name, n.Ext)
+	n.Name = strings.TrimSuffix(n.Basename, n.Ext)
 	n.PascalCase = casing.Camel(n.Name)
 	if n.PascalCase != "" {
 		n.CamelCase = casing.LowerCamel(n.Name)
@@ -43,6 +43,19 @@ func New(name string) *Name {
 	n.KebabCase = casing.Kebab(n.Name)
 	n.SnakeCase = casing.Snake(n.Name)
 	return n
+}
+
+func (n Name) RelativizePath() string {
+	if n.Path == "/" {
+		return "./"
+	}
+	parts := strings.Split(strings.Trim(n.Dir, "/"), "/")
+	dots := make([]string, len(parts))
+	for i := range parts {
+		dots[i] = ".."
+	}
+	dots = append(dots, n.Basename)
+	return filepath.Join(dots...)
 }
 
 func (n *Name) Matches(pat string) bool {

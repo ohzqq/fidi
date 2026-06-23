@@ -10,9 +10,14 @@ import (
 func TestTree(t *testing.T) {
 	//s := New(`tmp/video`)
 	//s.Build()
-	tree, err := NewFromBasePath(`tmp/video`)
+	tree, err := NewFromBasePath(`testdata/video`)
 	if err != nil {
 		t.Fatal(err)
+	}
+	for _, c := range tree.Children {
+		for _, ch := range c.Children {
+			t.Errorf("abs %#v\n", ch.Name)
+		}
 	}
 	//list := NewList(tree)
 	if g := len(tree.Children); g != 3 {
@@ -41,7 +46,8 @@ func TestTree(t *testing.T) {
 }
 
 func TestTreeSerialize(t *testing.T) {
-	tree, err := NewFromBasePath(`tmp/video`)
+	t.SkipNow()
+	tree, err := NewFromBasePath(`testdata/video`)
 	if err != nil {
 		t.Fatal(err)
 	}
