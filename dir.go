@@ -30,10 +30,10 @@ func newDirName(name string, depth int) *fn.Filename {
 	return n
 }
 
-func (d Dir) FilterByExt(ext string, recurse bool) ([]*Dir, error) {
-	name := d.Filename()
+func (d *Dir) FilterByExt(ext string, recurse bool) ([]*Dir, error) {
 	filter := func(n tree.Node) bool {
-		if !n.HasChildren() {
+		name := fn.New(n.ID())
+		if n.HasChildren() {
 			return false
 		}
 		return name.Ext == ext
@@ -42,11 +42,7 @@ func (d Dir) FilterByExt(ext string, recurse bool) ([]*Dir, error) {
 	if err != nil {
 		return nil, err
 	}
-	dirs := make([]*Dir, len(nodes))
-	//for i, n := range nodes {
-	//dirs[i]
-	//}
-	return dirs, nil
+	return nodesToDirs(nodes), nil
 }
 
 func (d Dir) GetNodeByPath(path string, dir bool) (Dir, error) {
@@ -74,9 +70,8 @@ func (d Dir) GetNodeByPath(path string, dir bool) (Dir, error) {
 	return branch, nil
 }
 
-func (d Dir) Filename() *fn.Filename {
-	m := d.Get("name")
-	return m.(*fn.Filename)
+func (d *Dir) Filename() *fn.Filename {
+	return fn.New(d.ID())
 }
 
 func (d Dir) RelativizePath() string {
@@ -104,7 +99,7 @@ func (d Dir) RelativizePath() string {
 func nodesToDirs(nodes []tree.Node) []*Dir {
 	n := make([]*Dir, len(nodes))
 	for i, node := range nodes {
-		n[i] = node.(*Dir)
+		n[i] = &Dir{Node: node}
 	}
 	return n
 }

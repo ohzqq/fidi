@@ -42,6 +42,7 @@ func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *Dir) 
 	for _, f := range files {
 		path := filepath.Join(baseDir, f.Name())
 		child := NewDir(path, parent.Depth()+1)
+		parent.AddChild(child)
 		if parent.Depth() > 0 {
 			child.AddParent(parent.Parents()...)
 		}
@@ -54,7 +55,6 @@ func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *Dir) 
 			child.isDir = true
 			walkDirFs(fs, filepath.Join(baseDir, child.Filename().Basename), child.Filename().Path, child)
 		}
-		parent.AddChild(child)
 	}
 	return depth, nil
 }
