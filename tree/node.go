@@ -2,9 +2,6 @@ package tree
 
 import (
 	"slices"
-	"strings"
-
-	"github.com/ohzqq/fidi/fn"
 )
 
 type Node interface {
@@ -12,64 +9,85 @@ type Node interface {
 	Depth() int
 	Parents() []Node
 	Children() []Node
-	AddNode(n Node)
+	AddChild(n ...Node)
+	AddParent(n ...Node)
 	HasChildren() bool
 	Walk(fn WalkNodeFunc) error
 	Filter(filter FilterNodeFunc, recurse bool) ([]Node, error)
+	Meta() map[string]any
+	Get(k string) any
+	Set(k string, v any)
+	Has(k string) bool
 }
 
-type Nodez struct {
-	*fn.Filename `yaml:",inline"`
-	depth        int            `yaml:"depth" json:"depth,omitempty"`
-	isBranch     bool           `yaml:"isBranch" json:"isBranch,omitempty"`
-	Meta         map[string]any `yaml:"meta,omitempty" json:"meta,omitempty"`
-	parents      []Node         `yaml:"parents,omitempty" json:"parents,omitempty"`
-	children     []Node         `yaml:"children,omitempty" json:"children,omitempty"`
-	hasChildren  bool           `yaml:"hasChildren" json:"hasChildren,omitempty"`
-	id           string
+type node struct {
+	depth       int            `yaml:"depth" json:"depth,omitempty"`
+	isBranch    bool           `yaml:"isBranch" json:"isBranch,omitempty"`
+	meta        map[string]any `yaml:"meta,omitempty" json:"meta,omitempty"`
+	parents     []Node         `yaml:"parents,omitempty" json:"parents,omitempty"`
+	children    []Node         `yaml:"children,omitempty" json:"children,omitempty"`
+	hasChildren bool           `yaml:"hasChildren" json:"hasChildren,omitempty"`
+	id          string
 }
 
-func (n Nodez) Depth() int {
-	return n.depth
-}
-
-func (n Nodez) ID() string {
-	return n.id
-}
-
-func (n Nodez) Parents() []Node {
-	return n.parents
-}
-
-func (n Nodez) Children() []Node {
-	return n.children
-}
-
-func (n Nodez) HasChildren() bool {
-	return len(n.Children()) > 0
-}
-
-func (n Nodez) AddNode(node Node) {
-	n.children = append(n.children, node)
-}
-
-func nodezToNodes(nodes []Nodez) []Node {
-	n := make([]Node, len(nodes))
-	for i, node := range nodes {
-		n[i] = node
-	}
-	return n
-}
-
-func NewNode(name string, depth int) Nodez {
-	node := Nodez{
+func NewNode(name string, depth int) *node {
+	node := &node{
 		depth: depth,
 		id:    name,
+		meta:  make(map[string]any),
 	}
 	return node
 }
 
-func (n Nodez) Walk(fn WalkNodeFunc) error {
+func (n *node) Depth() int {
+	return n.depth
+}
+
+func (n *node) ID() string {
+	return n.id
+}
+
+func (n *node) Parents() []Node {
+	return n.parents
+}
+
+func (n *node) Children() []Node {
+	return n.children
+}
+
+func (n *node) HasChildren() bool {
+	return len(n.Children()) > 0
+}
+
+func (n *node) AddChild(node ...Node) {
+	n.children = append(n.children, node...)
+}
+
+func (n *node) AddParent(node ...Node) {
+	n.parents = append(n.parents, node...)
+}
+
+func (n *node) Meta() map[string]any {
+	return n.meta
+}
+
+func (n *node) Set(k string, v any) {
+	n.meta[k] = v
+}
+
+func (n *node) Get(k string) any {
+	if n.Has(k) {
+		return n.meta[k]
+	}
+	return nil
+}
+
+func (n *node) Has(k string) bool {
+	_, ok := n.meta[k]
+	return ok
+}
+
+func (n *node) Walk(fn WalkNodeFunc) error {
 	err := fn(n)
 	if err != nil {
 		return err
@@ -83,7 +101,7 @@ func (n Nodez) Walk(fn WalkNodeFunc) error {
 	return nil
 }
 
-func (n Nodez) Filter(filter FilterNodeFunc, recurse bool) ([]Node, error) {
+func (n *node) Filter(filter FilterNodeFunc, recurse bool) ([]Node, error) {
 	nodes := []Node{}
 	if !recurse {
 		for _, l := range n.children {
@@ -109,46 +127,11 @@ func (n Nodez) Filter(filter FilterNodeFunc, recurse bool) ([]Node, error) {
 	return nodes, nil
 }
 
-func (n Nodez) FilterByDepth(depth int) ([]Node, error) {
+func (n *node) FilterByDepth(depth int) ([]Node, error) {
 	return n.Filter(func(node Node) bool {
 		return node.Depth() <= depth
 	}, true)
 }
-
-func (n Nodez) GetNodeByPath(path string, dir bool) (Nodez, error) {
-	branch := n
-	if !strings.HasPrefix(path, "/") {
-		path = "/" + path
-	}
-	fn := func(node Node) error {
-		for _, c := range node.Children() {
-			if dir && c.HasChildren() {
-				continue
-			}
-			//if c.AbsPath == path {
-			//  branch = c
-			//  return nil
-			//}
-
-		}
-		return nil
-	}
-	err := n.Walk(fn)
-	if err != nil {
-		return n, err
-	}
-	return branch, nil
-}
-
-//func (n Nodez) FilterByExt(ext string, recurse bool) ([]Nodez, error) {
-//  filter := func(n Nodez) bool {
-//    if n.IsBranch {
-//      return false
-//    }
-//    return n.Ext == ext
-//  }
-//  return n.Filter(filter, recurse)
-//}
 
 func SortLeavesFirst(n Node) error {
 	slices.SortStableFunc(n.Children(), func(a, b Node) int {
@@ -161,6 +144,14 @@ func SortLeavesFirst(n Node) error {
 		return 0
 	})
 	return nil
+}
+
+func nodezToNodes(nodes []*node) []Node {
+	n := make([]Node, len(nodes))
+	for i, node := range nodes {
+		n[i] = node
+	}
+	return n
 }
 
 type WalkNodeFunc func(node Node) error

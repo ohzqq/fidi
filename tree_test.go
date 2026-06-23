@@ -18,8 +18,10 @@ func TestTree(t *testing.T) {
 	}
 	//list := NewList(tree)
 	if g := len(tree.Children()); g != 3 {
-		t.Errorf("got %d, wanted %d\n", g, 3)
+		t.Fatalf("got %d, wanted %d\n", g, 3)
 	}
+	dir := tree.Sub()[0]
+	t.Errorf("got %#v\n", dir)
 	//b, err := tree.GetNodesAtDepth(1)
 	//if err != nil {
 	//t.Errorf("%#v, depth %#v\n", b, len(b))
