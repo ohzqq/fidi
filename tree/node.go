@@ -146,14 +146,6 @@ func SortLeavesFirst(n Node) error {
 	return nil
 }
 
-func nodezToNodes(nodes []*node) []Node {
-	n := make([]Node, len(nodes))
-	for i, node := range nodes {
-		n[i] = node
-	}
-	return n
-}
-
 type WalkNodeFunc func(node Node) error
 
 type FilterNodeFunc func(node Node) bool

@@ -71,7 +71,8 @@ func (d Dir) GetNodeByPath(path string, dir bool) (Dir, error) {
 }
 
 func (d *Dir) Filename() *fn.Filename {
-	return fn.New(d.ID())
+	//fmt.Printf("%#v\n", d.Get("name"))
+	return d.Get("name").(*fn.Filename)
 }
 
 func (d Dir) RelativizePath() string {
