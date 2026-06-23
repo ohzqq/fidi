@@ -3,16 +3,16 @@ package fidi
 import (
 	"path/filepath"
 
-	"github.com/ohzqq/fidi/tree"
 	"github.com/spf13/afero"
 )
 
 var osFs = afero.Afero{Fs: afero.NewOsFs()}
 
 type Filetree struct {
-	tree.Trunk `yaml:",inline"`
-	//Dir        *Dir
-	Fs afero.Afero `yaml:"-"`
+	//tree.Trunk `yaml:",inline"`
+	*Dir
+	MaxDepth int
+	Fs       afero.Afero `yaml:"-"`
 }
 
 func NewFS(fs afero.Fs, rootDir string) (*Filetree, error) {
@@ -24,14 +24,10 @@ func NewFS(fs afero.Fs, rootDir string) (*Filetree, error) {
 		return &Filetree{}, err
 	}
 	return &Filetree{
-		//Dir:   node,
-		Trunk: tree.New(node, m),
-		Fs:    afero.Afero{fs},
+		Dir:      node,
+		MaxDepth: m,
+		Fs:       afero.Afero{fs},
 	}, nil
-}
-
-func (d *Filetree) Sub() []*Dir {
-	return nodesToDirs(d.Children())
 }
 
 func NewFromBasePath(rootDir string) (*Filetree, error) {
