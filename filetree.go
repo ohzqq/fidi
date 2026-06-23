@@ -51,11 +51,9 @@ func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *tree.
 		parent.Children[i].Parents = append(parent.Children[i].Parents, p)
 		if !f.IsDir() {
 			parent.Children[i].IsBranch = false
-			//parent.Children[i].Path = relativeDir
 		} else {
 			depth++
 			parent.Children[i].IsBranch = true
-			//parent.Children[i].Path = filepath.Join(relativeDir, parent.Children[i].Basename)
 			walkDirFs(fs, filepath.Join(baseDir, parent.Children[i].Basename), parent.Children[i].Path, &parent.Children[i])
 			parent.Children[i].HasChildren = len(parent.Children[i].Children) > 0
 		}

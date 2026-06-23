@@ -9,7 +9,7 @@ import (
 	"github.com/danielgtaylor/casing"
 )
 
-type Name struct {
+type Filename struct {
 	Name       string `yaml:"name,omitempty" json:"name,omitempty"`
 	Basename   string `yaml:"basename,omitempty" json:"basename,omitempty"`
 	Dir        string `yaml:"dir,omitempty" json:"dir,omitempty"`
@@ -24,8 +24,8 @@ type Name struct {
 	SnakeCase  string `yaml:"snakeCase,omitempty" json:"snakeCase,omitempty"`
 }
 
-func New(name string) *Name {
-	n := &Name{
+func New(name string) *Filename {
+	n := &Filename{
 		Path: name,
 	}
 	n.Ext = path.Ext(name)
@@ -45,7 +45,7 @@ func New(name string) *Name {
 	return n
 }
 
-func (n Name) RelativizePath() string {
+func (n Filename) RelativizePath() string {
 	if n.Path == "/" {
 		return "./"
 	}
@@ -58,7 +58,7 @@ func (n Name) RelativizePath() string {
 	return filepath.Join(dots...)
 }
 
-func (n *Name) Matches(pat string) bool {
+func (n *Filename) Matches(pat string) bool {
 	m, err := path.Match(pat, n.Dir+n.Basename)
 	if err != nil {
 		return false

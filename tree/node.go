@@ -8,19 +8,19 @@ import (
 )
 
 type Node struct {
-	*fn.Name    `yaml:",inline"`
-	Depth       int            `yaml:"depth" json:"depth,omitempty"`
-	IsBranch    bool           `yaml:"isBranch,omitempty" json:"isBranch,omitempty"`
-	Meta        map[string]any `yaml:"meta,omitempty" json:"meta,omitempty"`
-	Parents     []Node         `yaml:"parents,omitempty" json:"parents,omitempty"`
-	Children    []Node         `yaml:"children,omitempty" json:"children,omitempty"`
-	HasChildren bool           `yaml:"hasChildren,omitempty" json:"hasChildren,omitempty"`
+	*fn.Filename `yaml:",inline"`
+	Depth        int            `yaml:"depth" json:"depth,omitempty"`
+	IsBranch     bool           `yaml:"isBranch,omitempty" json:"isBranch,omitempty"`
+	Meta         map[string]any `yaml:"meta,omitempty" json:"meta,omitempty"`
+	Parents      []Node         `yaml:"parents,omitempty" json:"parents,omitempty"`
+	Children     []Node         `yaml:"children,omitempty" json:"children,omitempty"`
+	HasChildren  bool           `yaml:"hasChildren,omitempty" json:"hasChildren,omitempty"`
 }
 
 func NewNode(name string, depth int) Node {
 	node := Node{
-		Name:  fn.New(name),
-		Depth: depth,
+		Filename: fn.New(name),
+		Depth:    depth,
 	}
 	if depth == 0 {
 		node.RelPath = "./"

@@ -14,11 +14,6 @@ func TestTree(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, c := range tree.Children {
-		for _, ch := range c.Children {
-			t.Errorf("abs %#v\n", ch.Name)
-		}
-	}
 	//list := NewList(tree)
 	if g := len(tree.Children); g != 3 {
 		t.Errorf("got %d, wanted %d\n", g, 3)
@@ -46,7 +41,7 @@ func TestTree(t *testing.T) {
 }
 
 func TestTreeSerialize(t *testing.T) {
-	t.SkipNow()
+	//t.SkipNow()
 	tree, err := NewFromBasePath(`testdata/video`)
 	if err != nil {
 		t.Fatal(err)
