@@ -30,7 +30,7 @@ func newDirName(name string, depth int) *fn.Filename {
 	return n
 }
 
-func (d *Dir) FilterByExt(ext string, recurse bool) ([]*Dir, error) {
+func (d *Dir) FilterByExt(ext string, depth int) ([]*Dir, error) {
 	filter := func(n tree.Node) bool {
 		name := fn.New(n.ID())
 		if n.HasChildren() {
@@ -38,7 +38,7 @@ func (d *Dir) FilterByExt(ext string, recurse bool) ([]*Dir, error) {
 		}
 		return name.Ext == ext
 	}
-	nodes, err := d.Filter(filter, recurse)
+	nodes, err := d.Filter(filter, depth)
 	if err != nil {
 		return nil, err
 	}

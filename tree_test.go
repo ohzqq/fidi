@@ -22,27 +22,19 @@ func TestTree(t *testing.T) {
 	}
 	//dir := tree.Children()[0]
 	//t.Errorf("got %#v\n", dir.Get("name"))
-	//b, err := tree.GetNodesAtDepth(1)
-	//if err != nil {
-	//t.Errorf("%#v, depth %#v\n", b, len(b))
-	//}
+	b, err := tree.FilterByDepth(ft, 1)
+	if g := len(b); g != 4 {
+		for _, n := range b {
+			t.Errorf("%#v, depth %#v\n", n.ID(), n.Depth())
+		}
+	}
 	//if len(b) != 3 {
 	//t.Errorf("%#v, depth %#v\n", b, tree.MaxDepth)
 	//}
-	b, err := ft.FilterByExt(".html", true)
-	if len(b) != 5 {
+	e, err := ft.FilterByExt(".html", -1)
+	if len(e) != 5 {
 		t.Errorf("%#v, depth %#v\n", b, ft.MaxDepth)
 	}
-
-	fn := func(n tree.Node) error {
-		println(n.Depth())
-		return nil
-	}
-	err = ft.Walk(fn)
-	if err != nil {
-		t.Error(err)
-	}
-	println(ft.MaxDepth)
 
 	//path := `/depth2/depth3/index.html`
 	//n, err := tree.GetNodeByPath(path, false)
