@@ -17,9 +17,8 @@ type Filetree struct {
 
 func NewFS(fs afero.Fs, rootDir string) (*Filetree, error) {
 	node := NewDir(rootDir, 0)
-	node.Path = rootDir
 	node.isDir = true
-	m, err := walkDirFs(afero.Afero{fs}, rootDir, node.Path, node)
+	m, err := walkDirFs(afero.Afero{fs}, rootDir, node.Filename().Path, node)
 	if err != nil {
 		return &Filetree{}, err
 	}
@@ -53,7 +52,7 @@ func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *Dir) 
 		} else {
 			depth++
 			child.isDir = true
-			walkDirFs(fs, filepath.Join(baseDir, child.Basename), child.Path, child)
+			walkDirFs(fs, filepath.Join(baseDir, child.Filename().Basename), child.Filename().Path, child)
 		}
 		parent.AddChild(child)
 	}

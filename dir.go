@@ -9,36 +9,40 @@ import (
 )
 
 type Dir struct {
-	*fn.Filename `yaml:",inline"`
 	tree.Node
 	isDir bool
 }
 
 func NewDir(name string, depth int) *Dir {
 	node := &Dir{
-		Filename: fn.New(name),
-		Node:     tree.NewNode(name, depth),
+		Node: tree.NewNode(name, depth),
 	}
-	node.Set("name", node.Filename)
-	if depth == 0 {
-		node.RelPath = "./"
-	}
-	node.Mimetype = strings.Split(node.Mimetype, ";")[0]
+	node.Set("name", newDirName(name, depth))
 	return node
 }
 
-func (d Dir) FilterByExt(ext string, recurse bool) ([]Dir, error) {
+func newDirName(name string, depth int) *fn.Filename {
+	n := fn.New(name)
+	if depth == 0 {
+		n.RelPath = "./"
+	}
+	n.Mimetype = strings.Split(n.Mimetype, ";")[0]
+	return n
+}
+
+func (d Dir) FilterByExt(ext string, recurse bool) ([]*Dir, error) {
+	name := d.Filename()
 	filter := func(n tree.Node) bool {
 		if !n.HasChildren() {
 			return false
 		}
-		return d.Ext == ext
+		return name.Ext == ext
 	}
 	nodes, err := d.Filter(filter, recurse)
 	if err != nil {
 		return nil, err
 	}
-	dirs := make([]Dir, len(nodes))
+	dirs := make([]*Dir, len(nodes))
 	//for i, n := range nodes {
 	//dirs[i]
 	//}
@@ -70,21 +74,22 @@ func (d Dir) GetNodeByPath(path string, dir bool) (Dir, error) {
 	return branch, nil
 }
 
-func (d Dir) Fn() *fn.Filename {
+func (d Dir) Filename() *fn.Filename {
 	m := d.Get("name")
 	return m.(*fn.Filename)
 }
 
 func (d Dir) RelativizePath() string {
-	if d.Path == "/" {
+	n := d.Filename()
+	if n.Path == "/" {
 		return "./"
 	}
-	parts := strings.Split(strings.TrimPrefix(d.Path, "/"), "/")
+	parts := strings.Split(strings.TrimPrefix(n.Path, "/"), "/")
 	dots := make([]string, len(parts))
 	for i := range parts {
 		dots[i] = ".."
 	}
-	dots = append(dots, d.Basename)
+	dots = append(dots, n.Basename)
 	return filepath.Join(dots...)
 }
 
