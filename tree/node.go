@@ -102,9 +102,15 @@ func (n *node) Walk(fn WalkNodeFunc) error {
 }
 
 func (n *node) Filter(filter FilterNodeFunc, depth int) ([]Node, error) {
+	nodes := []Node{}
+	fn := func(node Node) error {
+		if filter(node) {
+			nodes = append(nodes, node)
+		}
+		return nil
+	}
 	if depth > -1 {
-		nodes := []Node{}
-		fn := func(node Node) error {
+		fn = func(node Node) error {
 			if node.Depth() <= depth {
 				if filter(node) {
 					nodes = append(nodes, node)
@@ -112,22 +118,6 @@ func (n *node) Filter(filter FilterNodeFunc, depth int) ([]Node, error) {
 			}
 			return nil
 		}
-		err := n.Walk(fn)
-		if err != nil {
-			return nil, err
-		}
-		return nodes, nil
-	}
-	return n.filter(filter)
-}
-
-func (n *node) filter(filter FilterNodeFunc) ([]Node, error) {
-	nodes := []Node{}
-	fn := func(node Node) error {
-		if filter(node) {
-			nodes = append(nodes, node)
-		}
-		return nil
 	}
 	err := n.Walk(fn)
 	if err != nil {
