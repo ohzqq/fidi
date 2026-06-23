@@ -38,7 +38,7 @@ func (d *Dir) FilterByExt(ext string, depth int) ([]*Dir, error) {
 		}
 		return name.Ext == ext
 	}
-	nodes, err := d.Filter(filter, depth)
+	nodes, err := d.Filter(depth, filter)
 	if err != nil {
 		return nil, err
 	}
