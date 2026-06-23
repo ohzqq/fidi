@@ -12,12 +12,12 @@ import (
 func TestTree(t *testing.T) {
 	//s := New(`tmp/video`)
 	//s.Build()
-	tree, err := NewFromBasePath(`testdata/video`)
+	ft, err := NewFromBasePath(`testdata/video`)
 	if err != nil {
 		t.Fatal(err)
 	}
 	//list := NewList(tree)
-	if g := len(tree.Children()); g != 3 {
+	if g := len(ft.Children()); g != 3 {
 		t.Fatalf("got %d, wanted %d\n", g, 3)
 	}
 	//dir := tree.Children()[0]
@@ -29,10 +29,20 @@ func TestTree(t *testing.T) {
 	//if len(b) != 3 {
 	//t.Errorf("%#v, depth %#v\n", b, tree.MaxDepth)
 	//}
-	b, err := tree.FilterByExt(".html", true)
+	b, err := ft.FilterByExt(".html", true)
 	if len(b) != 5 {
-		t.Errorf("%#v, depth %#v\n", b, tree.MaxDepth)
+		t.Errorf("%#v, depth %#v\n", b, ft.MaxDepth)
 	}
+
+	fn := func(n tree.Node) error {
+		println(n.Depth())
+		return nil
+	}
+	err = ft.Walk(fn)
+	if err != nil {
+		t.Error(err)
+	}
+	println(ft.MaxDepth)
 
 	//path := `/depth2/depth3/index.html`
 	//n, err := tree.GetNodeByPath(path, false)
