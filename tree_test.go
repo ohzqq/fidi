@@ -24,7 +24,7 @@ func TestTree(t *testing.T) {
 	if dir := ft.Children()[0]; dir.Get("filename").(*fn.Filename).Basename != "index.html" {
 		t.Errorf("got %#v\n", dir.Get("filename"))
 	}
-	b, err := ft.Filter(tree.FilterNodesByDepth(1))
+	b, err := tree.Filter(ft, tree.FilterNodesByDepth(1))
 	if g := len(b); g != 4 {
 		for _, n := range b {
 			t.Errorf("%#v, depth %#v\n", n.ID(), n.Depth())
@@ -33,18 +33,13 @@ func TestTree(t *testing.T) {
 	//if len(b) != 3 {
 	//t.Errorf("%#v, depth %#v\n", b, tree.MaxDepth)
 	//}
-	//filtered, err := ft.FilterByExt(".html", -1)
-	//if len(filtered) != 5 {
-	//t.Errorf("%#v, depth %#v\n", filtered, ft.MaxDepth)
-	//}
-
-	mf, err := ft.FilterByMimetype("video", 1)
-	println(len(mf))
-	println(len(mf) != 15)
-	for _, n := range mf {
-		t.Errorf("%#v, depth %#v\n", n.ID(), n.Get("name"))
+	filtered, err := ft.FilterByExt(".html", -1)
+	if len(filtered) != 5 {
+		t.Errorf("%#v, depth %#v\n", filtered, ft.MaxDepth)
 	}
-	if len(mf) != 15 {
+
+	mf, err := ft.FilterByMimetype("video", -1)
+	if len(mf) != 3 {
 		t.Errorf("%#v\n", mf)
 	}
 
@@ -64,7 +59,7 @@ func TestTreeSerialize(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ft.Walk(tree.SortByLeavesFirst)
+	err = tree.Walk(ft, tree.SortByLeavesFirst)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +75,7 @@ func TestSortNodes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ft.Walk(tree.SortByLeavesFirst)
+	err = tree.Walk(ft, tree.SortByLeavesFirst)
 	if err != nil {
 		t.Fatal(err)
 	}

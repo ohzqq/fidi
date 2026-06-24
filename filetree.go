@@ -26,7 +26,7 @@ func NewFS(fs afero.Fs, rootDir string) (*Filetree, error) {
 	if err != nil {
 		return &Filetree{}, err
 	}
-	err = ft.Walk(tree.SortByLeavesFirst)
+	err = tree.Walk(node, tree.SortByLeavesFirst)
 	if err != nil {
 		return nil, err
 	}

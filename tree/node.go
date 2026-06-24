@@ -12,8 +12,6 @@ type Node interface {
 	AddChild(n ...Node)
 	AddParent(n ...Node)
 	HasChildren() bool
-	Walk(fn WalkNodeFunc) error
-	Filter(filters ...FilterNodeFunc) ([]Node, error)
 	Meta() map[string]any
 	Get(k string) any
 	Set(k string, v any)
@@ -87,13 +85,13 @@ func (n *node) Has(k string) bool {
 	return ok
 }
 
-func (n *node) Walk(fn WalkNodeFunc) error {
-	err := fn(n)
+func Walk(node Node, fn WalkNodeFunc) error {
+	err := fn(node)
 	if err != nil {
 		return err
 	}
-	for _, c := range n.Children() {
-		err := c.Walk(fn)
+	for _, c := range node.Children() {
+		err := Walk(c, fn)
 		if err != nil {
 			return err
 		}
@@ -101,8 +99,7 @@ func (n *node) Walk(fn WalkNodeFunc) error {
 	return nil
 }
 
-// Filter returns false if any of the filters return false.
-func (n *node) Filter(filters ...FilterNodeFunc) ([]Node, error) {
+func Filter(node Node, filters ...FilterNodeFunc) ([]Node, error) {
 	nodes := []Node{}
 	fn := func(node Node) error {
 		if filter(node, filters...) {
@@ -110,7 +107,7 @@ func (n *node) Filter(filters ...FilterNodeFunc) ([]Node, error) {
 		}
 		return nil
 	}
-	err := n.Walk(fn)
+	err := Walk(node, fn)
 	if err != nil {
 		return nil, err
 	}
@@ -134,6 +131,9 @@ func GetNodesAtDepth(depth int) FilterNodeFunc {
 
 func FilterNodesByDepth(depth int) FilterNodeFunc {
 	return func(node Node) bool {
+		if depth == -1 {
+			return true
+		}
 		return node.Depth() <= depth
 	}
 }

@@ -38,7 +38,7 @@ func (d *Dir) FilterByExt(ext string, depth int) ([]*Dir, error) {
 		}
 		return name.Ext == ext
 	}
-	nodes, err := d.Filter(filter, tree.FilterNodesByDepth(depth))
+	nodes, err := tree.Filter(d, filter, tree.FilterNodesByDepth(depth))
 	if err != nil {
 		return nil, err
 	}
@@ -53,36 +53,11 @@ func (d *Dir) FilterByMimetype(mt string, depth int) ([]*Dir, error) {
 		}
 		return strings.Contains(name.Mimetype, mt)
 	}
-	nodes, err := d.Filter(filter, tree.FilterNodesByDepth(depth))
+	nodes, err := tree.Filter(d, filter, tree.FilterNodesByDepth(depth))
 	if err != nil {
 		return nil, err
 	}
 	return nodesToDirs(nodes), nil
-}
-
-func (d Dir) GetNodeByPath(path string, dir bool) (Dir, error) {
-	branch := d
-	if !strings.HasPrefix(path, "/") {
-		path = "/" + path
-	}
-	fn := func(node tree.Node) error {
-		for _, c := range node.Children() {
-			if dir && c.HasChildren() {
-				continue
-			}
-			//if c.AbsPath == path {
-			//  branch = c
-			//  return nil
-			//}
-
-		}
-		return nil
-	}
-	err := d.Walk(fn)
-	if err != nil {
-		return d, err
-	}
-	return branch, nil
 }
 
 func (d *Dir) Filename() *fn.Filename {
