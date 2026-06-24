@@ -30,6 +30,14 @@ func newDirName(name string, depth int) *fn.Filename {
 	return n
 }
 
+func (d *Dir) Filter(filters ...tree.FilterNodeFunc) ([]*Dir, error) {
+	nodes, err := tree.Filter(d, filters...)
+	if err != nil {
+		return nil, err
+	}
+	return nodesToDirs(nodes), nil
+}
+
 func (d *Dir) FilterByExt(ext string, depth int) ([]*Dir, error) {
 	filter := func(n tree.Node) bool {
 		name := fn.New(n.ID())
@@ -53,11 +61,7 @@ func (d *Dir) FilterByMimetype(mt string, depth int) ([]*Dir, error) {
 		}
 		return strings.Contains(name.Mimetype, mt)
 	}
-	nodes, err := tree.Filter(d, filter, tree.FilterNodesByDepth(depth))
-	if err != nil {
-		return nil, err
-	}
-	return nodesToDirs(nodes), nil
+	return d.Filter(filter, tree.FilterNodesByDepth(depth))
 }
 
 func (d *Dir) Filename() *fn.Filename {
