@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"fmt"
 	"slices"
 )
 
@@ -12,8 +13,8 @@ type Node interface {
 	AddChild(n ...Node)
 	AddParent(n ...Node)
 	HasChildren() bool
-	Walk(fn WalkNodeFunc) error
-	Filter(depth int, filters ...FilterNodeFunc) ([]Node, error)
+	Walk(fn WalkNodeFunc, filters ...FilterNodeFunc) error
+	Filter(filters ...FilterNodeFunc) bool
 	Meta() map[string]any
 	Get(k string) any
 	Set(k string, v any)
@@ -87,40 +88,67 @@ func (n *node) Has(k string) bool {
 	return ok
 }
 
-func (n *node) Walk(fn WalkNodeFunc) error {
+func (n *node) Walk(fn WalkNodeFunc, filters ...FilterNodeFunc) error {
+	walk := n.Filter(filters...)
 	err := fn(n)
 	if err != nil {
 		return err
 	}
-	for _, c := range n.children {
-		err := c.Walk(fn)
-		if err != nil {
-			return err
+	if walk {
+		for _, c := range n.children {
+			err := c.Walk(fn)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
-func (n *node) Filter(depth int, filters ...FilterNodeFunc) ([]Node, error) {
-	nodes := []Node{}
+// Filter returns false if any of the filters return false.
+func (n *node) Filter(filters ...FilterNodeFunc) bool {
+	f := true
 	for _, filter := range filters {
-		if filter(node) {
-			nodes = append(nodes, node)
+		if !filter(n) {
+			fmt.Printf("%#v\n", n.Get("name"))
+			f = false
+			//return false
 		}
+	}
+	return f
+}
+
+func NodesAtDepth(n Node, depth int) ([]Node, error) {
+	filter := func(node Node) bool {
+		return node.Depth() == depth
+	}
+	nodes := []Node{}
+	walk := func(node Node) error {
+		nodes = append(nodes, node)
+		return nil
+	}
+	err := n.Walk(walk, filter)
+	if err != nil {
+		return nil, err
 	}
 	return nodes, nil
 }
 
-func NodesAtDepth(n Node, depth int) ([]Node, error) {
-	return n.Filter(depth, func(node Node) bool {
-		return node.Depth() == depth
-	})
-}
-
 func FilterByDepth(n Node, depth int) ([]Node, error) {
-	return n.Filter(depth, func(node Node) bool {
+	filter := func(node Node) bool {
 		return node.Depth() <= depth
-	})
+	}
+	nodes := []Node{}
+	walk := func(node Node) error {
+		nodes = append(nodes, node)
+		return nil
+	}
+	err := n.Walk(walk, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return nodes, nil
 }
 
 func SortLeavesFirst(n Node) error {

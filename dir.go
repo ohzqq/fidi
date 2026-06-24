@@ -38,7 +38,12 @@ func (d *Dir) FilterByExt(ext string, depth int) ([]*Dir, error) {
 		}
 		return name.Ext == ext
 	}
-	nodes, err := d.Filter(depth, filter)
+	nodes := []tree.Node{}
+	walk := func(node tree.Node) error {
+		nodes = append(nodes, node)
+		return nil
+	}
+	err := d.Walk(walk, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -53,10 +58,16 @@ func (d *Dir) FilterByMimetype(mt string, depth int) ([]*Dir, error) {
 		}
 		return strings.Contains(name.Mimetype, mt)
 	}
-	nodes, err := d.Filter(depth, filter)
+	nodes := []tree.Node{}
+	walk := func(n tree.Node) error {
+		nodes = append(nodes, n)
+		return nil
+	}
+	err := d.Walk(walk, filter)
 	if err != nil {
 		return nil, err
 	}
+	//fmt.Printf("%#v\n", nodes)
 	return nodesToDirs(nodes), nil
 }
 

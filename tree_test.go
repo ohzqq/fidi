@@ -37,11 +37,13 @@ func TestTree(t *testing.T) {
 	//}
 
 	mf, err := ft.FilterByMimetype("video", 1)
-	println(len(mf) != 90)
-	if len(mf) != 90 {
-		for _, n := range mf {
-			t.Errorf("%#v, depth %#v\n", n.ID(), n.Depth())
-		}
+	println(len(mf))
+	println(len(mf) != 15)
+	for _, n := range mf {
+		t.Errorf("%#v, depth %#v\n", n.ID(), n.Get("name"))
+	}
+	if len(mf) != 15 {
+		t.Errorf("%#v\n", mf)
 	}
 
 	//path := `/depth2/depth3/index.html`
