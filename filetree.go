@@ -3,6 +3,7 @@ package fidi
 import (
 	"path/filepath"
 
+	"github.com/ohzqq/fidi/tree"
 	"github.com/spf13/afero"
 )
 
@@ -24,6 +25,10 @@ func NewFS(fs afero.Fs, rootDir string) (*Filetree, error) {
 	err := ft.walkDir(rootDir, node.Filename().Path, node)
 	if err != nil {
 		return &Filetree{}, err
+	}
+	err = ft.Walk(tree.SortByLeavesFirst)
+	if err != nil {
+		return nil, err
 	}
 	return ft, nil
 }

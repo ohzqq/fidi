@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/ohzqq/fidi/fn"
 	"github.com/ohzqq/fidi/tree"
 	"go.yaml.in/yaml/v4"
 )
@@ -20,14 +21,15 @@ func TestTree(t *testing.T) {
 	if g := len(ft.Children()); g != 3 {
 		t.Fatalf("got %d, wanted %d\n", g, 3)
 	}
-	//dir := tree.Children()[0]
-	//t.Errorf("got %#v\n", dir.Get("name"))
-	//b, err := tree.FilterByDepth(ft, 1)
-	//if g := len(b); g != 4 {
-	//for _, n := range b {
-	//t.Errorf("%#v, depth %#v\n", n.ID(), n.Depth())
-	//}
-	//}
+	if dir := ft.Children()[0]; dir.Get("filename").(*fn.Filename).Basename != "index.html" {
+		t.Errorf("got %#v\n", dir.Get("filename"))
+	}
+	b, err := ft.Filter(tree.FilterNodesByDepth(1))
+	if g := len(b); g != 4 {
+		for _, n := range b {
+			t.Errorf("%#v, depth %#v\n", n.ID(), n.Depth())
+		}
+	}
 	//if len(b) != 3 {
 	//t.Errorf("%#v, depth %#v\n", b, tree.MaxDepth)
 	//}
@@ -62,7 +64,7 @@ func TestTreeSerialize(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ft.Walk(tree.SortLeavesFirst)
+	err = ft.Walk(tree.SortByLeavesFirst)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +80,7 @@ func TestSortNodes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = ft.Walk(tree.SortLeavesFirst)
+	err = ft.Walk(tree.SortByLeavesFirst)
 	if err != nil {
 		t.Fatal(err)
 	}

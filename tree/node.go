@@ -1,7 +1,6 @@
 package tree
 
 import (
-	"fmt"
 	"slices"
 )
 
@@ -13,8 +12,8 @@ type Node interface {
 	AddChild(n ...Node)
 	AddParent(n ...Node)
 	HasChildren() bool
-	Walk(fn WalkNodeFunc, filters ...FilterNodeFunc) error
-	Filter(filters ...FilterNodeFunc) bool
+	Walk(fn WalkNodeFunc) error
+	Filter(filters ...FilterNodeFunc) ([]Node, error)
 	Meta() map[string]any
 	Get(k string) any
 	Set(k string, v any)
@@ -88,75 +87,63 @@ func (n *node) Has(k string) bool {
 	return ok
 }
 
-func (n *node) Walk(fn WalkNodeFunc, filters ...FilterNodeFunc) error {
-	walk := n.Filter(filters...)
+func (n *node) Walk(fn WalkNodeFunc) error {
 	err := fn(n)
 	if err != nil {
 		return err
 	}
-	if walk {
-		for _, c := range n.children {
-			err := c.Walk(fn)
-			if err != nil {
-				return err
-			}
+	for _, c := range n.Children() {
+		err := c.Walk(fn)
+		if err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
 // Filter returns false if any of the filters return false.
-func (n *node) Filter(filters ...FilterNodeFunc) bool {
-	f := true
-	for _, filter := range filters {
-		if !filter(n) {
-			fmt.Printf("%#v\n", n.Get("name"))
-			f = false
-			//return false
+func (n *node) Filter(filters ...FilterNodeFunc) ([]Node, error) {
+	nodes := []Node{}
+	fn := func(node Node) error {
+		if filter(node, filters...) {
+			nodes = append(nodes, node)
 		}
+		return nil
 	}
-	return f
+	err := n.Walk(fn)
+	if err != nil {
+		return nil, err
+	}
+	return nodes, nil
 }
 
-func NodesAtDepth(n Node, depth int) ([]Node, error) {
-	filter := func(node Node) bool {
+func filter(node Node, filters ...FilterNodeFunc) bool {
+	for _, filter := range filters {
+		if !filter(node) {
+			return false
+		}
+	}
+	return true
+}
+
+func GetNodesAtDepth(depth int) FilterNodeFunc {
+	return func(node Node) bool {
 		return node.Depth() == depth
 	}
-	nodes := []Node{}
-	walk := func(node Node) error {
-		nodes = append(nodes, node)
-		return nil
-	}
-	err := n.Walk(walk, filter)
-	if err != nil {
-		return nil, err
-	}
-	return nodes, nil
 }
 
-func FilterByDepth(n Node, depth int) ([]Node, error) {
-	filter := func(node Node) bool {
+func FilterNodesByDepth(depth int) FilterNodeFunc {
+	return func(node Node) bool {
 		return node.Depth() <= depth
 	}
-	nodes := []Node{}
-	walk := func(node Node) error {
-		nodes = append(nodes, node)
-		return nil
-	}
-	err := n.Walk(walk, filter)
-	if err != nil {
-		return nil, err
-	}
-
-	return nodes, nil
 }
 
-func SortLeavesFirst(n Node) error {
+func SortByLeavesFirst(n Node) error {
 	slices.SortStableFunc(n.Children(), func(a, b Node) int {
-		if a.HasChildren() && !b.HasChildren() {
+		if !a.HasChildren() && b.HasChildren() {
 			return -1
 		}
-		if !a.HasChildren() && b.HasChildren() {
+		if a.HasChildren() && !b.HasChildren() {
 			return 1
 		}
 		return 0
