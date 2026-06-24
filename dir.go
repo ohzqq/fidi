@@ -38,6 +38,10 @@ func (d *Dir) Filter(filters ...tree.FilterNodeFunc) ([]*Dir, error) {
 	return nodesToDirs(nodes), nil
 }
 
+func (d *Dir) Walk(fn tree.WalkNodeFunc) error {
+	return tree.Walk(d, fn)
+}
+
 func (d *Dir) FilterByExt(ext string, depth int) ([]*Dir, error) {
 	filter := func(n tree.Node) bool {
 		name := fn.New(n.ID())
@@ -46,11 +50,7 @@ func (d *Dir) FilterByExt(ext string, depth int) ([]*Dir, error) {
 		}
 		return name.Ext == ext
 	}
-	nodes, err := tree.Filter(d, filter, tree.FilterNodesByDepth(depth))
-	if err != nil {
-		return nil, err
-	}
-	return nodesToDirs(nodes), nil
+	return d.Filter(filter, tree.FilterNodesByDepth(depth))
 }
 
 func (d *Dir) FilterByMimetype(mt string, depth int) ([]*Dir, error) {
