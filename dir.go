@@ -45,6 +45,21 @@ func (d *Dir) FilterByExt(ext string, depth int) ([]*Dir, error) {
 	return nodesToDirs(nodes), nil
 }
 
+func (d *Dir) FilterByMimetype(mt string, depth int) ([]*Dir, error) {
+	filter := func(n tree.Node) bool {
+		name := fn.New(n.ID())
+		if n.HasChildren() {
+			return false
+		}
+		return strings.Contains(name.Mimetype, mt)
+	}
+	nodes, err := d.Filter(depth, filter)
+	if err != nil {
+		return nil, err
+	}
+	return nodesToDirs(nodes), nil
+}
+
 func (d Dir) GetNodeByPath(path string, dir bool) (Dir, error) {
 	branch := d
 	if !strings.HasPrefix(path, "/") {

@@ -103,29 +103,10 @@ func (n *node) Walk(fn WalkNodeFunc) error {
 
 func (n *node) Filter(depth int, filters ...FilterNodeFunc) ([]Node, error) {
 	nodes := []Node{}
-	fn := func(node Node) error {
-		for _, filter := range filters {
-			if filter(node) {
-				nodes = append(nodes, node)
-			}
+	for _, filter := range filters {
+		if filter(node) {
+			nodes = append(nodes, node)
 		}
-		return nil
-	}
-	if depth > -1 {
-		fn = func(node Node) error {
-			if node.Depth() <= depth {
-				for _, filter := range filters {
-					if filter(node) {
-						nodes = append(nodes, node)
-					}
-				}
-			}
-			return nil
-		}
-	}
-	err := n.Walk(fn)
-	if err != nil {
-		return nil, err
 	}
 	return nodes, nil
 }

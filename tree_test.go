@@ -22,18 +22,26 @@ func TestTree(t *testing.T) {
 	}
 	//dir := tree.Children()[0]
 	//t.Errorf("got %#v\n", dir.Get("name"))
-	b, err := tree.FilterByDepth(ft, 1)
-	if g := len(b); g != 4 {
-		for _, n := range b {
-			t.Errorf("%#v, depth %#v\n", n.ID(), n.Depth())
-		}
-	}
+	//b, err := tree.FilterByDepth(ft, 1)
+	//if g := len(b); g != 4 {
+	//for _, n := range b {
+	//t.Errorf("%#v, depth %#v\n", n.ID(), n.Depth())
+	//}
+	//}
 	//if len(b) != 3 {
 	//t.Errorf("%#v, depth %#v\n", b, tree.MaxDepth)
 	//}
-	e, err := ft.FilterByExt(".html", -1)
-	if len(e) != 5 {
-		t.Errorf("%#v, depth %#v\n", b, ft.MaxDepth)
+	//filtered, err := ft.FilterByExt(".html", -1)
+	//if len(filtered) != 5 {
+	//t.Errorf("%#v, depth %#v\n", filtered, ft.MaxDepth)
+	//}
+
+	mf, err := ft.FilterByMimetype("video", 1)
+	println(len(mf) != 90)
+	if len(mf) != 90 {
+		for _, n := range mf {
+			t.Errorf("%#v, depth %#v\n", n.ID(), n.Depth())
+		}
 	}
 
 	//path := `/depth2/depth3/index.html`

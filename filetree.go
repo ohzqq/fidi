@@ -37,7 +37,6 @@ func (ft *Filetree) walkDir(baseDir string, relativeDir string, parent *Dir) err
 	if err != nil {
 		return err
 	}
-	//depth := 0
 	for _, f := range files {
 		path := filepath.Join(baseDir, f.Name())
 		child := NewDir(path, parent.Depth()+1)
@@ -56,30 +55,4 @@ func (ft *Filetree) walkDir(baseDir string, relativeDir string, parent *Dir) err
 		}
 	}
 	return nil
-}
-
-func walkDirFs(fs afero.Afero, baseDir string, relativeDir string, parent *Dir) (int, error) {
-	files, err := fs.ReadDir(baseDir)
-	if err != nil {
-		return 0, err
-	}
-	depth := 0
-	for _, f := range files {
-		path := filepath.Join(baseDir, f.Name())
-		child := NewDir(path, parent.Depth()+1)
-		parent.AddChild(child)
-		if parent.Depth() > 0 {
-			child.AddParent(parent.Parents()...)
-		}
-		p := *parent
-		child.AddParent(p)
-		if !f.IsDir() {
-			child.isDir = false
-		} else {
-			depth++
-			child.isDir = true
-			walkDirFs(fs, filepath.Join(baseDir, child.Filename().Basename), child.Filename().Path, child)
-		}
-	}
-	return depth, nil
 }
