@@ -17,7 +17,7 @@ func NewDir(name string, depth int) *Dir {
 	node := &Dir{
 		Node: tree.NewNode(name, depth),
 	}
-	node.Set("name", newDirName(name, depth))
+	node.Set("filename", newDirName(name, depth))
 	return node
 }
 
@@ -38,12 +38,7 @@ func (d *Dir) FilterByExt(ext string, depth int) ([]*Dir, error) {
 		}
 		return name.Ext == ext
 	}
-	nodes := []tree.Node{}
-	walk := func(node tree.Node) error {
-		nodes = append(nodes, node)
-		return nil
-	}
-	err := d.Walk(walk, filter)
+	nodes, err := d.Filter(filter, tree.FilterNodesByDepth(depth))
 	if err != nil {
 		return nil, err
 	}
@@ -58,16 +53,10 @@ func (d *Dir) FilterByMimetype(mt string, depth int) ([]*Dir, error) {
 		}
 		return strings.Contains(name.Mimetype, mt)
 	}
-	nodes := []tree.Node{}
-	walk := func(n tree.Node) error {
-		nodes = append(nodes, n)
-		return nil
-	}
-	err := d.Walk(walk, filter)
+	nodes, err := d.Filter(filter, tree.FilterNodesByDepth(depth))
 	if err != nil {
 		return nil, err
 	}
-	//fmt.Printf("%#v\n", nodes)
 	return nodesToDirs(nodes), nil
 }
 
@@ -97,8 +86,7 @@ func (d Dir) GetNodeByPath(path string, dir bool) (Dir, error) {
 }
 
 func (d *Dir) Filename() *fn.Filename {
-	//fmt.Printf("%#v\n", d.Get("name"))
-	return d.Get("name").(*fn.Filename)
+	return d.Get("filename").(*fn.Filename)
 }
 
 func (d Dir) RelativizePath() string {
@@ -115,13 +103,33 @@ func (d Dir) RelativizePath() string {
 	return filepath.Join(dots...)
 }
 
-//func (d Dir) Children() []tree.Node {
-//return nodezToNodes(d.children)
-//}
+func (d Dir) Files() []*Dir {
+	nodes := []*Dir{}
+	for _, n := range d.children() {
+		if !n.HasChildren() {
+			nodes = append(nodes, n)
+		}
+	}
+	return nodes
+}
 
-//func (d Dir) Parents() []tree.Node {
-//return nodezToNodes(d.parents)
-//}
+func (d Dir) Dirs() []*Dir {
+	nodes := []*Dir{}
+	for _, n := range d.children() {
+		if n.HasChildren() {
+			nodes = append(nodes, n)
+		}
+	}
+	return nodes
+}
+
+func (d *Dir) children() []*Dir {
+	return nodesToDirs(d.Children())
+}
+
+func (d Dir) parents() []*Dir {
+	return nodesToDirs(d.Parents())
+}
 
 func nodesToDirs(nodes []tree.Node) []*Dir {
 	n := make([]*Dir, len(nodes))
