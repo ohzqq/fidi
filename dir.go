@@ -24,7 +24,7 @@ func NewDir(name string, depth int) *Dir {
 func newDirName(name string, depth int) *fn.Filename {
 	n := fn.New(name)
 	if depth == 0 {
-		n.RelPath = "./"
+		n.RelPath = "/"
 	}
 	n.Mimetype = strings.Split(n.Mimetype, ";")[0]
 	return n
@@ -71,7 +71,7 @@ func (d *Dir) Filename() *fn.Filename {
 func (d Dir) RelativizePath() string {
 	n := d.Filename()
 	if n.Path == "/" {
-		return "./"
+		return "/"
 	}
 	parts := strings.Split(strings.TrimPrefix(n.Path, "/"), "/")
 	dots := make([]string, len(parts))
