@@ -49,7 +49,6 @@ func (ft *Filetree) walkDir(baseDir string, relativeDir string, parent *Dir) err
 		if parent.Depth() > 0 {
 			child.AddParent(parent.Parents()...)
 		}
-		p := *parent
 		child.AddParent(p)
 		if !f.IsDir() {
 			child.isDir = false
