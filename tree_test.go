@@ -24,7 +24,7 @@ func TestTree(t *testing.T) {
 	if dir := ft.Children()[0]; dir.Get("filename").(*fn.Filename).Basename != "index.html" {
 		t.Errorf("got %#v\n", dir.Get("filename"))
 	}
-	b := ft.FilterWalk(tree.FilterNodesByDepth(0))
+	b := ft.FilterWalk(tree.FilterNodesByDepth(1))
 	if err != nil {
 		t.Fatal(err)
 	}
