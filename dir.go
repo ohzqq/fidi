@@ -81,6 +81,10 @@ func (d *Dir) FilterByMimetype(mt string, recurse bool) []*Dir {
 	return FilterDirByMimetype(d, mt, recurse)
 }
 
+func (d *Dir) FindChild(filters ...tree.FilterNodeFunc) *Dir {
+	return FindChild(d, filters...)
+}
+
 func FilterDir(dir *Dir, recurse bool, filters ...tree.FilterNodeFunc) []*Dir {
 	files := []*Dir{}
 	if !recurse {
@@ -101,6 +105,14 @@ func FilterDir(dir *Dir, recurse bool, filters ...tree.FilterNodeFunc) []*Dir {
 	return nodesToDirs(nodes)
 }
 
+func FindChild(d *Dir, filters ...tree.FilterNodeFunc) *Dir {
+	files := FilterDir(d, false, filters...)
+	if len(files) > 0 {
+		return files[0]
+	}
+	return d
+}
+
 func FindChildByBasename(d *Dir, name string) *Dir {
 	files := FilterDir(d, false, FilterBasename(name))
 	if len(files) > 0 {
@@ -110,7 +122,7 @@ func FindChildByBasename(d *Dir, name string) *Dir {
 }
 
 func FindChildByPath(d *Dir, path string) *Dir {
-	files := FilterDir(d, false, FilterBasename(path))
+	files := FilterDir(d, false, FilterPath(path))
 	if len(files) > 0 {
 		return files[0]
 	}

@@ -95,6 +95,10 @@ func TestFilterDirFilesBasename(t *testing.T) {
 	if file.Filename().Basename != "index.html" {
 		t.Errorf("%#v, %v\n", file.Filename(), file.ID())
 	}
+	file = ft.FindChild(FilterBasename("index.html"))
+	if file.Filename().Basename != "index.html" {
+		t.Errorf("%#v, %v\n", file.Filename(), file.ID())
+	}
 }
 
 func TestTreeSerialize(t *testing.T) {
