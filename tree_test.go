@@ -91,12 +91,12 @@ func TestFilterDirFilesBasename(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	file := FindChildByBasename(ft.Dir, "index.html")
-	if file.Filename().Basename != "index.html" {
+	file, ok := FindChildByBasename(ft.Dir, "index.html")
+	if !ok {
 		t.Errorf("%#v, %v\n", file.Filename(), file.ID())
 	}
-	file = ft.FindChild(FilterBasename("index.html"))
-	if file.Filename().Basename != "index.html" {
+	file, ok = ft.FindChild(FilterBasename("index.html"))
+	if !ok {
 		t.Errorf("%#v, %v\n", file.Filename(), file.ID())
 	}
 }
