@@ -10,18 +10,18 @@ import (
 )
 
 type Filename struct {
-	Name       string `yaml:"name,omitempty" json:"name,omitempty"`
-	Basename   string `yaml:"basename,omitempty" json:"basename,omitempty"`
-	Dir        string `yaml:"dir,omitempty" json:"dir,omitempty"`
-	Path       string `yaml:"path,omitempty" json:"path,omitempty"`
-	Ext        string `yaml:"ext,omitempty" json:"ext,omitempty"`
-	Mimetype   string `yaml:"mimetype,omitempty" json:"mimetype,omitempty"`
-	AbsPath    string `yaml:"absPath,omitempty" json:"absPath,omitempty"`
-	RelPath    string `yaml:"relPath,omitempty" json:"relPath,omitempty"`
-	CamelCase  string `yaml:"camelCase,omitempty" json:"camelCase,omitempty"`
-	PascalCase string `yaml:"pascalCase,omitempty" json:"pascalCase,omitempty"`
-	KebabCase  string `yaml:"kebabCase,omitempty" json:"kebabCase,omitempty"`
-	SnakeCase  string `yaml:"snakeCase,omitempty" json:"snakeCase,omitempty"`
+	Name       string `yaml:"name,omitempty" json:"name,omitempty" mapstructure:"name"`
+	Basename   string `yaml:"basename,omitempty" json:"basename,omitempty" mapstructure:"basename"`
+	Dir        string `yaml:"dir,omitempty" json:"dir,omitempty" mapstructure:"dir"`
+	Path       string `yaml:"path,omitempty" json:"path,omitempty" mapstructure:"path"`
+	Ext        string `yaml:"ext,omitempty" json:"ext,omitempty" mapstructure:"ext"`
+	Mimetype   string `yaml:"mimetype,omitempty" json:"mimetype,omitempty" mapstructure:"mimetype"`
+	AbsPath    string `yaml:"absPath,omitempty" json:"absPath,omitempty" mapstructure:"absPath"`
+	RelPath    string `yaml:"relPath,omitempty" json:"relPath,omitempty" mapstructure:"relPath"`
+	CamelCase  string `yaml:"camelCase,omitempty" json:"camelCase,omitempty" mapstructure:"camelCase"`
+	PascalCase string `yaml:"pascalCase,omitempty" json:"pascalCase,omitempty" mapstructure:"pascalCase"`
+	KebabCase  string `yaml:"kebabCase,omitempty" json:"kebabCase,omitempty" mapstructure:"kebabCase"`
+	SnakeCase  string `yaml:"snakeCase,omitempty" json:"snakeCase,omitempty" mapstructure:"snakeCase"`
 }
 
 func New(name string) *Filename {
