@@ -81,15 +81,15 @@ func (d *Dir) FilterByMimetype(mt string, recurse bool) []*Dir {
 	return FilterDirByMimetype(d, mt, recurse)
 }
 
-func (d *Dir) FindChild(filters ...tree.FilterNodeFunc) *Dir {
+func (d *Dir) FindChild(filters ...tree.FilterNodeFunc) (*Dir, bool) {
 	return FindChild(d, filters...)
 }
 
-func (d *Dir) FindChildByPath(path string) *Dir {
+func (d *Dir) FindChildByPath(path string) (*Dir, bool) {
 	return FindChildByPath(d, path)
 }
 
-func (d *Dir) FindChildByBasename(path string) *Dir {
+func (d *Dir) FindChildByBasename(path string) (*Dir, bool) {
 	return FindChildByBasename(d, path)
 }
 
@@ -113,19 +113,19 @@ func FilterDir(dir *Dir, recurse bool, filters ...tree.FilterNodeFunc) []*Dir {
 	return nodesToDirs(nodes)
 }
 
-func FindChild(d *Dir, filters ...tree.FilterNodeFunc) *Dir {
+func FindChild(d *Dir, filters ...tree.FilterNodeFunc) (*Dir, bool) {
 	files := FilterDir(d, false, filters...)
 	if len(files) > 0 {
-		return files[0]
+		return files[0], true
 	}
-	return d
+	return nil, false
 }
 
-func FindChildByBasename(d *Dir, name string) *Dir {
+func FindChildByBasename(d *Dir, name string) (*Dir, bool) {
 	return FindChild(d, FilterBasename(name))
 }
 
-func FindChildByPath(d *Dir, path string) *Dir {
+func FindChildByPath(d *Dir, path string) (*Dir, bool) {
 	return FindChild(d, FilterPath(path))
 }
 
