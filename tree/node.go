@@ -114,6 +114,17 @@ func Filter(node Node, filters ...FilterNodeFunc) ([]Node, error) {
 	return nodes, nil
 }
 
+func FindNodeByID(node Node, id string) (Node, error) {
+	nodes, err := Filter(node, GetNodeByID(id))
+	if err != nil {
+		return node, err
+	}
+	if len(nodes) == 0 {
+		return node, err
+	}
+	return nodes[0], nil
+}
+
 func filter(node Node, filters ...FilterNodeFunc) bool {
 	for _, filter := range filters {
 		if !filter(node) {
@@ -126,6 +137,12 @@ func filter(node Node, filters ...FilterNodeFunc) bool {
 func GetNodesAtDepth(depth int) FilterNodeFunc {
 	return func(node Node) bool {
 		return node.Depth() == depth
+	}
+}
+
+func GetNodeByID(id string) FilterNodeFunc {
+	return func(node Node) bool {
+		return node.ID() == id
 	}
 }
 

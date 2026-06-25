@@ -24,7 +24,7 @@ func TestTree(t *testing.T) {
 	if dir := ft.Children()[0]; dir.Get("filename").(*fn.Filename).Basename != "index.html" {
 		t.Errorf("got %#v\n", dir.Get("filename"))
 	}
-	b, err := ft.Filter(tree.FilterNodesByDepth(1))
+	b, err := ft.Filter(tree.FilterNodesByDepth(0))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +53,7 @@ func TestTree(t *testing.T) {
 	}
 
 	walk := func(n tree.Node) error {
-		println(n.ID())
+		//println(n.ID())
 		return nil
 	}
 	err = ft.Walk(walk)
@@ -69,6 +69,35 @@ func TestTree(t *testing.T) {
 	//if n.RelPath != `../../index.html` {
 	//t.Errorf("%#v\n", n.RelativizePath())
 	//}
+}
+
+func TestFilterDirFiles(t *testing.T) {
+	ft, err := NewFromBasePath(`testdata/video`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	filtered, err := ft.FilterByExt(".html", -1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(filtered) != 5 {
+		t.Errorf("%#v, depth %#v\n", filtered[0].Filename(), ft.MaxDepth)
+	}
+	filtered = FilterDir(ft.Dir, false, FilterExt(".html"))
+	if len(filtered) != 1 {
+		t.Errorf("%#v, depth %#v\n", filtered[0].Filename(), ft.MaxDepth)
+	}
+}
+
+func TestFilterDirFilesBasename(t *testing.T) {
+	ft, err := NewFromBasePath(`testdata/video`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	file := FindChildByBasename(ft.Dir, "index.html")
+	if file.Filename().Basename != "index.html" {
+		t.Errorf("%#v, %v\n", file.Filename(), file.ID())
+	}
 }
 
 func TestTreeSerialize(t *testing.T) {

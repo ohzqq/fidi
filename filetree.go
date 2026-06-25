@@ -16,7 +16,7 @@ type Filetree struct {
 }
 
 func NewFS(fs afero.Fs, rootDir string) (*Filetree, error) {
-	node := NewDir(rootDir, 0)
+	node := NewDir(rootDir, -1)
 	node.isDir = true
 	ft := &Filetree{
 		Dir: node,

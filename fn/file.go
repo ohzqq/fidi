@@ -46,7 +46,7 @@ func New(name string) *Filename {
 }
 
 func (n Filename) RelativizePath() string {
-	if n.Path == "/" {
+	if n.Dir == "/" {
 		return "./"
 	}
 	parts := strings.Split(strings.Trim(n.Dir, "/"), "/")
