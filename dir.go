@@ -85,6 +85,14 @@ func (d *Dir) FindChild(filters ...tree.FilterNodeFunc) *Dir {
 	return FindChild(d, filters...)
 }
 
+func (d *Dir) FindChildByPath(path string) *Dir {
+	return FindChildByPath(d, path)
+}
+
+func (d *Dir) FindChildByBasename(path string) *Dir {
+	return FindChildByBasename(d, path)
+}
+
 func FilterDir(dir *Dir, recurse bool, filters ...tree.FilterNodeFunc) []*Dir {
 	files := []*Dir{}
 	if !recurse {
@@ -114,19 +122,11 @@ func FindChild(d *Dir, filters ...tree.FilterNodeFunc) *Dir {
 }
 
 func FindChildByBasename(d *Dir, name string) *Dir {
-	files := FilterDir(d, false, FilterBasename(name))
-	if len(files) > 0 {
-		return files[0]
-	}
-	return d
+	return FindChild(d, FilterBasename(name))
 }
 
 func FindChildByPath(d *Dir, path string) *Dir {
-	files := FilterDir(d, false, FilterPath(path))
-	if len(files) > 0 {
-		return files[0]
-	}
-	return d
+	return FindChild(d, FilterPath(path))
 }
 
 func FilterDirByExt(p *Dir, ext string, recurse bool) []*Dir {
