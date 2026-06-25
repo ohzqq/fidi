@@ -65,34 +65,20 @@ func (d Dir) parents() []*Dir {
 	return nodesToDirs(d.Parents())
 }
 
-func (d *Dir) Filter(filters ...tree.FilterNodeFunc) ([]*Dir, error) {
-	nodes, err := tree.Filter(d, filters...)
-	if err != nil {
-		return nil, err
-	}
-	return nodesToDirs(nodes), nil
+func (d *Dir) Filter(filters ...tree.FilterNodeFunc) []*Dir {
+	return FilterDir(d, false, filters...)
 }
 
-func (d *Dir) FilterByExt(ext string, depth int) ([]*Dir, error) {
-	filter := func(n tree.Node) bool {
-		name := fn.New(n.ID())
-		if n.HasChildren() {
-			return false
-		}
-		return name.Ext == ext
-	}
-	return d.Filter(filter, tree.FilterNodesByDepth(depth))
+func (d *Dir) FilterWalk(filters ...tree.FilterNodeFunc) []*Dir {
+	return FilterDir(d, true, filters...)
 }
 
-func (d *Dir) FilterByMimetype(mt string, depth int) ([]*Dir, error) {
-	filter := func(n tree.Node) bool {
-		name := fn.New(n.ID())
-		if n.HasChildren() {
-			return false
-		}
-		return strings.Contains(name.Mimetype, mt)
-	}
-	return d.Filter(filter, tree.FilterNodesByDepth(depth))
+func (d *Dir) FilterByExt(ext string, recurse bool) []*Dir {
+	return FilterDirByExt(d, ext, recurse)
+}
+
+func (d *Dir) FilterByMimetype(mt string, recurse bool) []*Dir {
+	return FilterDirByMimetype(d, mt, recurse)
 }
 
 func FilterDir(dir *Dir, recurse bool, filters ...tree.FilterNodeFunc) []*Dir {
